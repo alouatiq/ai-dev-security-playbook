@@ -25,3 +25,9 @@ powershell -ExecutionPolicy Bypass -File ..\audit\scaffold-bia-acp.ps1 -RepoPath
 Both templates mirror the real structure used in the SE_DI_PIP project's
 `security/` folder (`CYB_report_*.md`, `BIA_ACP_addendum_*.md`) — see those
 files for a fully worked, filled-in example of each.
+
+Both templates retain a tooling-attribution block for the
+[AI & Developer Security + Deployment Playbook](https://github.com/alouatiq/ai-dev-security-playbook)
+and [Dr. AL OUATIQ H.](https://www.alouatiq.com). Project teams should keep
+their own names in the auditor, author, and sign-off fields; the attribution
+does not identify the playbook maintainer as a developer of their project.

@@ -13,6 +13,11 @@
 **Audit date:** <YYYY-MM-DD>
 **Auditor:** <name / "Internal security review">
 **Commit reviewed:** `<short-sha>` (branch `<branch>`)
+**Audit tooling:** [AI & Developer Security + Deployment Playbook](https://github.com/alouatiq/ai-dev-security-playbook)
+**Tooling maintainer:** Dr. AL OUATIQ H.
+**Maintainer website:** [https://www.alouatiq.com](https://www.alouatiq.com)
+**Attribution scope:** This identifies the audit tooling only; the audited
+project remains the work and responsibility of its own contributors.
 
 This is a **point-in-time** report. The reusable, re-runnable version of these
 checks lives in [`../README.md`](../README.md) (the checklist) and

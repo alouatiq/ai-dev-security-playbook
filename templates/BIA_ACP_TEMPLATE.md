@@ -16,6 +16,11 @@
 **Addendum date:** <YYYY-MM-DD>
 **Amends:** <prior BIA/CYB assessment reference, if any>
 **Status:** 🟡 **PROPOSED — pending CYB validation**
+**Scaffold tooling:** [AI & Developer Security + Deployment Playbook](https://github.com/alouatiq/ai-dev-security-playbook)
+**Tooling maintainer:** Dr. AL OUATIQ H.
+**Maintainer website:** [https://www.alouatiq.com](https://www.alouatiq.com)
+**Attribution scope:** This identifies the scaffold tooling only; the
+assessment and project remain the work and responsibility of their own contributors.
 
 ---
 
