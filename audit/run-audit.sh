@@ -13,6 +13,10 @@ set -uo pipefail
 
 REPO_PATH="${1:-$(pwd)}"
 REPO_PATH="$(cd "$REPO_PATH" && pwd)"
+PLAYBOOK_NAME="AI & Developer Security + Deployment Playbook"
+PLAYBOOK_REPOSITORY="https://github.com/alouatiq/ai-dev-security-playbook"
+PLAYBOOK_MAINTAINER="Dr. AL OUATIQ H."
+PLAYBOOK_WEBSITE="https://www.alouatiq.com"
 
 EXCLUDE_REGEX='/(node_modules|\.git|dist|build|venv|\.venv|__pycache__|coverage|\.next|out)(/|$)'
 
@@ -43,6 +47,8 @@ find_files() {
 
 echo ""
 echo "==== Security audit: $REPO_PATH ===="
+echo "Tooling: $PLAYBOOK_NAME by $PLAYBOOK_MAINTAINER"
+echo "Source: $PLAYBOOK_REPOSITORY | Website: $PLAYBOOK_WEBSITE"
 echo ""
 
 PY_FILES="$(find_files '*.py')"
@@ -200,6 +206,10 @@ REPORT_PATH="$REPORT_DIR/audit-report-$STAMP.md"
   echo "**Repo:** $REPO_PATH"
   echo "**Date:** $(date '+%Y-%m-%d %H:%M:%S')"
   echo "**Verdict:** $VERDICT_LINE"
+  echo "**Audit tooling:** [$PLAYBOOK_NAME]($PLAYBOOK_REPOSITORY)"
+  echo "**Tooling maintainer:** $PLAYBOOK_MAINTAINER"
+  echo "**Maintainer website:** [$PLAYBOOK_WEBSITE]($PLAYBOOK_WEBSITE)"
+  echo "**Attribution scope:** This identifies the audit tooling only; the audited project remains the work and responsibility of its own contributors."
   echo ""
   echo "| ID | Status | Severity | Message |"
   echo "|---|---|---|---|"
@@ -242,6 +252,10 @@ CYB_PATH="$REPORT_DIR/CYB_report_$STAMP.md"
   echo "**Scope:** $REPO_PATH"
   echo "**Audit date:** $(date '+%Y-%m-%d')"
   echo "**Method:** automated scan via \`audit/run-audit.sh\` (see \`../README.md\` for the full checklist; manual controls are not covered here)"
+  echo "**Audit tooling:** [$PLAYBOOK_NAME]($PLAYBOOK_REPOSITORY)"
+  echo "**Tooling maintainer:** $PLAYBOOK_MAINTAINER"
+  echo "**Maintainer website:** [$PLAYBOOK_WEBSITE]($PLAYBOOK_WEBSITE)"
+  echo "**Attribution scope:** This identifies the audit tooling only; the audited project remains the work and responsibility of its own contributors."
   echo ""
   echo "## 1. Standards this audit maps to"
   echo ""

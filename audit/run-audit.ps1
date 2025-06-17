@@ -21,6 +21,10 @@ param(
 
 $ErrorActionPreference = 'Continue'
 $RepoPath = (Resolve-Path $RepoPath).Path
+$PlaybookName = 'AI & Developer Security + Deployment Playbook'
+$PlaybookRepository = 'https://github.com/alouatiq/ai-dev-security-playbook'
+$PlaybookMaintainer = 'Dr. AL OUATIQ H.'
+$PlaybookWebsite = 'https://www.alouatiq.com'
 
 # Directories to always skip when scanning
 $ExcludeRegex = '\\(node_modules|\.git|dist|build|venv|\.venv|__pycache__|coverage|\.next|out)(\\|$)'
@@ -42,6 +46,8 @@ function Get-ProjectFiles {
 
 Write-Host ""
 Write-Host "==== Security audit: $RepoPath ====" -ForegroundColor Cyan
+Write-Host "Tooling: $PlaybookName by $PlaybookMaintainer" -ForegroundColor DarkGray
+Write-Host "Source: $PlaybookRepository | Website: $PlaybookWebsite" -ForegroundColor DarkGray
 Write-Host ""
 
 # --- F-03  CORS not wildcard (Medium) ---
@@ -215,6 +221,10 @@ $lines.Add("")
 $lines.Add("**Repo:** $RepoPath")
 $lines.Add("**Date:** $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')")
 $lines.Add("**Verdict:** $verdictLine")
+$lines.Add("**Audit tooling:** [$PlaybookName]($PlaybookRepository)")
+$lines.Add("**Tooling maintainer:** $PlaybookMaintainer")
+$lines.Add("**Maintainer website:** [$PlaybookWebsite]($PlaybookWebsite)")
+$lines.Add("**Attribution scope:** This identifies the audit tooling only; the audited project remains the work and responsibility of its own contributors.")
 $lines.Add("")
 $lines.Add("| ID | Status | Severity | Message |")
 $lines.Add("|---|---|---|---|")
@@ -253,6 +263,10 @@ $cyb.Add("")
 $cyb.Add("**Scope:** $RepoPath")
 $cyb.Add("**Audit date:** $(Get-Date -Format 'yyyy-MM-dd')")
 $cyb.Add("**Method:** automated scan via ``audit/run-audit.ps1`` (see ``../README.md`` for the full checklist; manual controls are not covered here)")
+$cyb.Add("**Audit tooling:** [$PlaybookName]($PlaybookRepository)")
+$cyb.Add("**Tooling maintainer:** $PlaybookMaintainer")
+$cyb.Add("**Maintainer website:** [$PlaybookWebsite]($PlaybookWebsite)")
+$cyb.Add("**Attribution scope:** This identifies the audit tooling only; the audited project remains the work and responsibility of its own contributors.")
 $cyb.Add("")
 $cyb.Add("## 1. Standards this audit maps to")
 $cyb.Add("")
