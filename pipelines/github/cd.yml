@@ -1,0 +1,100 @@
+name: CD
+
+# Generic CD pipeline: build image(s), scan with Trivy, push only if clean.
+# Triggered when a PR is merged into the default branch (push to main).
+on:
+  push:
+    branches:
+      - main
+
+env:
+  BACKEND_DIR: backend
+  FRONTEND_DIR: frontend
+  REGISTRY: ghcr.io
+  IMAGE_NAME_BACKEND: ${{ github.repository }}-backend
+  IMAGE_NAME_FRONTEND: ${{ github.repository }}-frontend
+  # Fail the pipeline (block push) on these Trivy severities:
+  TRIVY_SEVERITY: CRITICAL,HIGH
+
+jobs:
+  build-and-scan-backend:
+    name: build-and-scan-backend
+    runs-on: ubuntu-latest
+    if: vars.BACKEND_DIR != ''
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build image
+        run: docker build -t local/backend:ci -f ${{ env.BACKEND_DIR }}/Dockerfile ${{ env.BACKEND_DIR }}
+
+      - name: Trivy scan (gate before push)
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: local/backend:ci
+          severity: ${{ env.TRIVY_SEVERITY }}
+          exit-code: "1"
+          ignore-unfixed: true
+
+      - name: Log in to registry
+        if: success()
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Push the exact scanned image
+        if: success()
+        run: |
+          docker tag local/backend:ci ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_BACKEND }}:${{ github.sha }}
+          docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_BACKEND }}:${{ github.sha }}
+
+  build-and-scan-frontend:
+    name: build-and-scan-frontend
+    runs-on: ubuntu-latest
+    if: vars.FRONTEND_DIR != ''
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build image
+        run: docker build -t local/frontend:ci -f ${{ env.FRONTEND_DIR }}/Dockerfile ${{ env.FRONTEND_DIR }}
+
+      - name: Trivy scan (gate before push)
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: local/frontend:ci
+          severity: ${{ env.TRIVY_SEVERITY }}
+          exit-code: "1"
+          ignore-unfixed: true
+
+      - name: Log in to registry
+        if: success()
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Push the exact scanned image
+        if: success()
+        run: |
+          docker tag local/frontend:ci ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_FRONTEND }}:${{ github.sha }}
+          docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_FRONTEND }}:${{ github.sha }}
+
+  release-summary:
+    name: release-summary
+    runs-on: ubuntu-latest
+    needs: [build-and-scan-backend, build-and-scan-frontend]
+    if: always()
+    steps:
+      - name: Summary
+        run: |
+          echo "### Release Complete ✅" >> $GITHUB_STEP_SUMMARY
+          echo "Commit: \`${GITHUB_SHA::7}\`" >> $GITHUB_STEP_SUMMARY
+          echo "Images pushed only if Trivy found no ${{ env.TRIVY_SEVERITY }} findings." >> $GITHUB_STEP_SUMMARY
