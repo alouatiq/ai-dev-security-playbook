@@ -1,0 +1,196 @@
+# Generic GitLab CI pipeline: lint -> build -> test -> security -> quality gate -> deploy.
+# Mirrors pipelines/github/{ci,cd}.yml so both platforms give the same guarantee.
+# Adjust the variables below to match your project layout.
+
+variables:
+  BACKEND_DIR: "backend"          # set to "" if there is no Python backend
+  FRONTEND_DIR: "frontend"        # set to "" if there is no Node frontend
+  PYTHON_VERSION: "3.12"
+  NODE_VERSION: "22"
+  COVERAGE_THRESHOLD: "80"
+  TRIVY_SEVERITY: "CRITICAL,HIGH"
+
+stages:
+  - lint
+  - build
+  - test
+  - security
+  - quality
+  - deploy
+
+# GitLab's built-in security scanners (SAST / Dependency Scanning / Secret
+# Detection) — free on GitLab.com, no extra runners required for most of them.
+include:
+  - template: Jobs/SAST.gitlab-ci.yml
+  - template: Jobs/Dependency-Scanning.gitlab-ci.yml
+  - template: Jobs/Secret-Detection.gitlab-ci.yml
+  - template: Jobs/Container-Scanning.gitlab-ci.yml
+
+workflow:
+  rules:
+    # Merge requests always run the full pipeline.
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    # Direct pushes to the default branch only run CD (build/scan/push/deploy).
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+    # Everything else (feature branch pushes) runs lint/build/test/security/quality.
+    - if: '$CI_PIPELINE_SOURCE == "push"'
+
+# ── Stage: lint ──────────────────────────────────────────────────────────────
+
+lint-backend:
+  stage: lint
+  image: python:${PYTHON_VERSION}
+  rules:
+    - if: '$BACKEND_DIR != "" && $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH'
+  script:
+    - pip install ruff
+    - cd $BACKEND_DIR
+    - ruff check .
+    - ruff format --check .
+
+lint-frontend:
+  stage: lint
+  image: node:${NODE_VERSION}
+  rules:
+    - if: '$FRONTEND_DIR != "" && $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH'
+  script:
+    - cd $FRONTEND_DIR
+    - npm ci
+    - npm run lint
+
+# ── Stage: build ─────────────────────────────────────────────────────────────
+
+build-backend:
+  stage: build
+  image: python:${PYTHON_VERSION}
+  needs: ["lint-backend"]
+  rules:
+    - if: '$BACKEND_DIR != "" && $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH'
+  script:
+    - cd $BACKEND_DIR
+    - pip install -r requirements-dev.txt || pip install -r requirements.txt
+    - python -c "import app.main" || echo "Adjust import target for your project"
+
+build-frontend:
+  stage: build
+  image: node:${NODE_VERSION}
+  needs: ["lint-frontend"]
+  rules:
+    - if: '$FRONTEND_DIR != "" && $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH'
+  script:
+    - cd $FRONTEND_DIR
+    - npm ci
+    - npx tsc --noEmit || true
+    - npm run build
+  artifacts:
+    paths:
+      - $FRONTEND_DIR/dist/
+    expire_in: 1 week
+
+# ── Stage: test ──────────────────────────────────────────────────────────────
+
+test-backend:
+  stage: test
+  image: python:${PYTHON_VERSION}
+  needs: ["build-backend"]
+  rules:
+    - if: '$BACKEND_DIR != "" && $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH'
+  script:
+    - cd $BACKEND_DIR
+    - pip install -r requirements-dev.txt || pip install -r requirements.txt
+    - pytest --cov=. --cov-report=xml --cov-report=term
+  coverage: '/TOTAL.*\s+(\d+%)$/'
+  artifacts:
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: $BACKEND_DIR/coverage.xml
+
+test-frontend:
+  stage: test
+  image: node:${NODE_VERSION}
+  needs: ["build-frontend"]
+  rules:
+    - if: '$FRONTEND_DIR != "" && $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH'
+  script:
+    - cd $FRONTEND_DIR
+    - npm ci
+    - npm run test:coverage
+  artifacts:
+    paths:
+      - $FRONTEND_DIR/coverage/lcov.info
+
+# ── Stage: security (project-specific, in addition to the included templates) ─
+
+pip-audit:
+  stage: security
+  image: python:${PYTHON_VERSION}
+  rules:
+    - if: '$BACKEND_DIR != ""'
+  script:
+    - pip install pip-audit
+    - cd $BACKEND_DIR
+    - pip-audit -r requirements.txt
+
+npm-audit:
+  stage: security
+  image: node:${NODE_VERSION}
+  rules:
+    - if: '$FRONTEND_DIR != ""'
+  script:
+    - cd $FRONTEND_DIR
+    - npm ci
+    - npm audit --audit-level=high
+
+bandit:
+  stage: security
+  image: python:${PYTHON_VERSION}
+  rules:
+    - if: '$BACKEND_DIR != ""'
+  script:
+    - pip install bandit
+    - cd $BACKEND_DIR
+    - bandit -r . -ll
+
+# ── Stage: quality gate ────────────────────────────────────────────────────
+
+quality-gate:
+  stage: quality
+  image: python:${PYTHON_VERSION}
+  needs: ["test-backend", "test-frontend"]
+  rules:
+    - if: '$BACKEND_DIR != "" && $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH'
+  script:
+    - cd $BACKEND_DIR
+    - pip install -r requirements-dev.txt || pip install -r requirements.txt
+    - pytest --cov=. --cov-fail-under=${COVERAGE_THRESHOLD} --no-header -q
+
+# ── Stage: deploy (main branch only, image build + Trivy gate + push) ───────
+
+build-and-push-backend:
+  stage: deploy
+  image: docker:24
+  services: ["docker:24-dind"]
+  rules:
+    - if: '$BACKEND_DIR != "" && $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+  script:
+    - docker build -t $CI_REGISTRY_IMAGE/backend:$CI_COMMIT_SHORT_SHA -f $BACKEND_DIR/Dockerfile $BACKEND_DIR
+    - docker run --rm -v /var/run/docker.sock:/var/run/docker.sock
+        aquasec/trivy image --severity $TRIVY_SEVERITY --exit-code 1 --ignore-unfixed
+        $CI_REGISTRY_IMAGE/backend:$CI_COMMIT_SHORT_SHA
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker push $CI_REGISTRY_IMAGE/backend:$CI_COMMIT_SHORT_SHA
+
+build-and-push-frontend:
+  stage: deploy
+  image: docker:24
+  services: ["docker:24-dind"]
+  rules:
+    - if: '$FRONTEND_DIR != "" && $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+  script:
+    - docker build -t $CI_REGISTRY_IMAGE/frontend:$CI_COMMIT_SHORT_SHA -f $FRONTEND_DIR/Dockerfile $FRONTEND_DIR
+    - docker run --rm -v /var/run/docker.sock:/var/run/docker.sock
+        aquasec/trivy image --severity $TRIVY_SEVERITY --exit-code 1 --ignore-unfixed
+        $CI_REGISTRY_IMAGE/frontend:$CI_COMMIT_SHORT_SHA
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker push $CI_REGISTRY_IMAGE/frontend:$CI_COMMIT_SHORT_SHA

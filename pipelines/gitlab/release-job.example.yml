@@ -1,0 +1,32 @@
+# Release automation job for GitLab CI. Merge this into your main
+# .gitlab-ci.yml (add "release" to the `stages:` list, after `deploy`).
+# Runs semantic-release, which reads Conventional Commit messages since the
+# last tag, computes the next SemVer version, updates CHANGELOG.md, creates
+# a git tag + a GitLab Release entry (via the @semantic-release/gitlab
+# plugin), and pushes the changelog commit back to the default branch.
+#
+#   feat:                      -> MINOR (feature)
+#   fix: / perf:               -> PATCH (fix)
+#   feat!:  / BREAKING CHANGE  -> MAJOR (breaking change)
+#
+# See ../../RELEASE_GUIDE.md for the full convention and versioning policy.
+#
+# Requires: a project access token or CI/CD variable GITLAB_TOKEN with
+# `api` scope (Settings > CI/CD > Variables), used by @semantic-release/gitlab
+# to create the tag/release and push the changelog commit.
+
+release:
+  stage: release
+  image: node:22
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+  script:
+    - npm install --no-save semantic-release
+        @semantic-release/commit-analyzer
+        @semantic-release/release-notes-generator
+        @semantic-release/changelog
+        @semantic-release/gitlab
+        @semantic-release/git
+    - npx semantic-release
+  variables:
+    GITLAB_TOKEN: $GITLAB_TOKEN
