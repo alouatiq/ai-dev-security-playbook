@@ -1,0 +1,30 @@
+name: release
+
+# Automated versioning. On every push to the default branch, release-please
+# reads Conventional Commit messages since the last release and opens/updates
+# a "release PR" that bumps the version and updates CHANGELOG.md. Merging
+# that PR cuts the release: it tags vX.Y.Z and (optionally) publishes a
+# GitHub Release.
+#
+#   feat:                      -> MINOR (feature)
+#   fix: / perf:               -> PATCH (fix)
+#   feat!:  / BREAKING CHANGE  -> MAJOR (breaking change)
+#
+# See ../../RELEASE_GUIDE.md for the full convention and versioning policy.
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release-please:
+    name: release-please
+    runs-on: ubuntu-latest
+    steps:
+      - uses: googleapis/release-please-action@v4
+        with:
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
