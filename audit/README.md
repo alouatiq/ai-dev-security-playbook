@@ -43,6 +43,12 @@ directory. The script:
 5. Exits non-zero **only** on a CRITICAL verdict, so it can gate CI
    (`security-scan` / `security` stage in `../pipelines/`).
 
+Every console run and generated report identifies the
+[AI & Developer Security + Deployment Playbook](https://github.com/alouatiq/ai-dev-security-playbook)
+and its maintainer, [Dr. AL OUATIQ H.](https://www.alouatiq.com). The wording
+explicitly attributes only the audit tooling; it does not claim authorship,
+ownership, or endorsement of the project being audited.
+
 See `../README.md` §2–3 for the full checklist and how the verdict is
 computed (severity mapping per control ID).
 

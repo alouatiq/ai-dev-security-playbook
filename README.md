@@ -11,6 +11,7 @@ commit this folder itself unless you intentionally want to vendor it.
 ```
 ai-dev-security-playbook/
 ├── README.md                 ← this file
+├── INTEGRATION_GUIDE.md       ← how to add and maintain the playbook in another repo
 ├── RELEASE_GUIDE.md            ← Conventional Commits, versioning, changelog, release automation
 ├── TECH_STACK.md                ← recommended base stack + how to adapt to other tech
 ├── audit/
@@ -45,6 +46,9 @@ ai-dev-security-playbook/
 ---
 
 ## 1. How to use this playbook
+
+For copy commands, recommended destination paths, updates, and attribution
+behavior, start with [`INTEGRATION_GUIDE.md`](INTEGRATION_GUIDE.md).
 
 1. **Pick your tech stack.** See `TECH_STACK.md` for the recommended default
    (Python FastAPI/Django + React) and how to retarget the audit/pipelines
