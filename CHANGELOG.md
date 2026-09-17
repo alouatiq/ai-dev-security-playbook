@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.0](https://github.com/alouatiq/ai-dev-security-playbook/compare/v0.2.1...v0.3.0) (2026-09-17)
+
+
+### Features
+
+* **audit:** detect secret-like filenames anywhere in git history ([b5e6ae9](https://github.com/alouatiq/ai-dev-security-playbook/commit/b5e6ae9b1c91e47572a4c6474018eab12edfc8a8))
+
 ## [0.2.1](https://github.com/alouatiq/ai-dev-security-playbook/compare/v0.2.0...v0.2.1) (2026-09-17)
 
 
