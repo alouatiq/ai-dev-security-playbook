@@ -11,7 +11,7 @@ feature.
 
 Every commit message on the default branch (or squashed PR/MR title) follows:
 
-```
+```text
 <type>[optional scope]: <description>
 
 [optional body]
@@ -20,7 +20,7 @@ Every commit message on the default branch (or squashed PR/MR title) follows:
 ```
 
 | Type | Triggers | Example |
-|---|---|---|
+| --- | --- | --- |
 | `fix:` | PATCH bump (x.y.**Z**) | `fix(auth): reject expired tokens` |
 | `feat:` | MINOR bump (x.**Y**.0) | `feat(api): add /export endpoint` |
 | `perf:` | PATCH bump | `perf(query): add index on blade_id` |
@@ -48,7 +48,7 @@ one matching your Git host.
 Files (see `pipelines/github/`):
 
 | File | Copy to |
-|---|---|
+| --- | --- |
 | `release.yml` | `.github/workflows/release.yml` |
 | `release-please-config.example.json` | repo root, as `release-please-config.json` |
 | `release-please-manifest.example.json` | repo root, as `.release-please-manifest.json` |
@@ -59,6 +59,7 @@ for all unreleased commits. Merging that PR is the actual release: it updates
 `CHANGELOG.md`, bumps the version, and tags `vX.Y.Z`.
 
 Edit `release-please-config.json`:
+
 - `package-name` → your project's name.
 - `release-type` → `"simple"` (version tracked only in the manifest — works
   for any project) or `"node"`/`"python"` if you want the version mirrored
@@ -70,7 +71,7 @@ Edit `release-please-config.json`:
 Files (see `pipelines/gitlab/`):
 
 | File | Copy to |
-|---|---|
+| --- | --- |
 | `release-job.example.yml` | merge the `release:` job into your `.gitlab-ci.yml`; add `release` to the `stages:` list |
 | `.releaserc.example.json` | repo root, as `.releaserc.json` |
 
@@ -110,7 +111,7 @@ Before merging the release PR (GitHub) or letting the `release` job run
 ## 4. What "release" produces
 
 | Artifact | Where it comes from |
-|---|---|
+| --- | --- |
 | Git tag `vX.Y.Z` | release-please / semantic-release, from the commit history |
 | `CHANGELOG.md` | Auto-generated, grouped by type (Features / Bug Fixes / Performance / …) |
 | GitHub Release / GitLab Release entry | Same tools, optional but recommended — gives a browsable release history |

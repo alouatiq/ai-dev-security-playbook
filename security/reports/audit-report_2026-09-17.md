@@ -9,7 +9,7 @@
 **Attribution scope:** This identifies the audit tooling only; the audited project remains the work and responsibility of its own contributors.
 
 | ID | Status | Severity | Message |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | F-03 | PASS | Medium | CORS is not a catch-all wildcard |
 | F-01 | WARN | Critical | No backend source found — skipped |
 | G-03 | PASS | Critical | No .env / key / token-cache files tracked by git |

@@ -11,7 +11,7 @@
 ## 1. Standards this audit maps to
 
 | Standard | Why it applies |
-|---|---|
+| --- | --- |
 | OWASP Top 10 (2021) | General web app risk baseline |
 | OWASP API Security Top 10 (2023) | Applies to any API-first backend |
 | OWASP ASVS 4.0 | Verification-level controls (auth, transport, config) |
@@ -22,7 +22,7 @@
 **Verdict: 🟡 ACCEPTED RISK — review warnings before deploying**
 
 | Severity | FAIL count |
-|---|---|
+| --- | --- |
 | Critical | 0 |
 | High | 0 |
 | Medium | 0 |
@@ -31,26 +31,32 @@
 ## 3. Findings
 
 ### [Informational] F-01 - No backend source found — skipped
+
 **Standard:** OWASP API2:2023 (Broken Authentication), A01:2021  
 **Remediation:** Require a validated auth dependency (JWT/OAuth2/API key) on every route.
 
 ### [Informational] G-02 - No frontend source found — skipped
+
 **Standard:** OWASP A03:2021 (Injection / XSS)  
 **Remediation:** Remove dangerouslySetInnerHTML/innerHTML/eval or sanitize input first.
 
 ### [Informational] F-09 - No Dockerfile found — skipped
+
 **Standard:** CIS Docker Benchmark 4.1  
 **Remediation:** Add a non-root USER directive to the Dockerfile.
 
 ### [Informational] F-07 - No requirements*.txt found — skipped
+
 **Standard:** OWASP A06:2021 (Vulnerable Components)  
 **Remediation:** Pin dependencies (==) or add a hashed lock file.
 
 ### [Informational] G-05 - No package.json found — skipped
+
 **Standard:** OWASP A06:2021 (Vulnerable Components)  
 **Remediation:** Patch or replace npm packages with known CVEs (npm audit).
 
 ### [Informational] F-07b - pip-audit not installed (pip install pip-audit) — skipped
+
 **Standard:** OWASP A06:2021 (Vulnerable Components)  
 **Remediation:** Patch or replace packages with known CVEs (pip-audit).
 

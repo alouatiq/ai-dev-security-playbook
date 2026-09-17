@@ -6,7 +6,7 @@ PASS/WARN/FAIL breakdown plus a deploy-readiness verdict.
 ## Files
 
 | File | Purpose |
-|---|---|
+| --- | --- |
 | `run-audit.ps1` | Windows/PowerShell audit script. Runs all automated checks from `../README.md` §2, prints a verdict, and writes two reports. |
 | `run-audit.sh` | Same checks/output for Linux/macOS/Git-Bash. |
 | `scaffold-bia-acp.ps1` | Scaffolds a dated BIA/ACP addendum (`../templates/BIA_ACP_TEMPLATE.md`) into the target repo's `security/` folder, pre-filling open findings from the latest audit run. Windows/PowerShell. |

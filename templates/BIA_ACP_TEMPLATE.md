@@ -54,7 +54,7 @@ Scale: **1 = Low · 2 = Medium · 3 = High.** *(Re-map to your corporate ACP
 scale if it differs — only the digits change, not the rationale.)*
 
 | Objective | Rating | Level | Basis |
-|---|:--:|---|---|
+| --- | :--: | --- | --- |
 | **Confidentiality** | <1-3> | <Low/Med/High> | <why — sensitivity of the data, PII/regulated content?> |
 | **Integrity** | <1-3> | <Low/Med/High> | <why — write path? detectable/recoverable errors?> |
 | **Availability** | <1-3> | <Low/Med/High> | <why — RTO/RPO, does production stop without it?> |
@@ -70,19 +70,22 @@ scale if it differs — only the digits change, not the rationale.)*
 ## 3. Impact analysis
 
 ### 3.1 Critical business processes supported
+
 <What processes does this system support? Does it execute/control them, or
 just support decision-making?>
 
 ### 3.2 Impact of a service outage
+
 | Duration | Impact |
-|---|---|
+| --- | --- |
 | < <n> h | <impact> |
 | <n> h – 1 day | <impact> |
 | > 1 day | <impact> |
 
 ### 3.3 Impact of data loss or breach
+
 | Scenario | Impact |
-|---|---|
+| --- | --- |
 | Data loss | <impact + recovery mechanism (backups, RPO)> |
 | Data breach | <impact + notification obligations if any PII> |
 | Data corruption in source | <impact + detectability> |
@@ -103,7 +106,7 @@ just support decision-making?>
 ## 5. References
 
 | Document | Date | Location |
-|---|---|---|
+| --- | --- | --- |
 | <prior assessment> | <date> | <path> |
 | Security audit report | <date> | <path> |
 
@@ -112,7 +115,7 @@ just support decision-making?>
 ## 6. Sign-off
 
 | Role | Name | Date | Signature |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | Proposed by | | | |
 | Assessor | | | *pending* |
 | Approved by | | | *pending* |

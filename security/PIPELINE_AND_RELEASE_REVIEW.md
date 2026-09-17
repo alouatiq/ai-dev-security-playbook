@@ -17,7 +17,7 @@ projects.
 ## 1. Starting state (before this review)
 
 | Area | Finding |
-|---|---|
+| --- | --- |
 | **CI/CD** | `.github/` did not exist. `pipelines/github/*` and `pipelines/gitlab/*` are templates for *consumers* — nothing was validating this repo's own scripts, YAML, or docs on every change. |
 | **Release** | No git tags, no GitHub Releases, despite `RELEASE_GUIDE.md` and `pipelines/github/release.yml` documenting release-please as the intended mechanism. `.release-please-manifest.json` / `release-please-config.json` did not exist at the repo root. |
 | **Governance files** | No `LICENSE`, `SECURITY.md`, or `CONTRIBUTING.md` — three of the items `README.md` §2.G requires *of consuming projects* were absent from the playbook's own repo. |
@@ -88,7 +88,7 @@ convention to trigger).
 ## 3. What was added to close the process gap
 
 | Added | Purpose |
-|---|---|
+| --- | --- |
 | `.github/workflows/ci.yml` | **New**, written for *this* repo (not copied from `pipelines/github/ci.yml`, which assumes a backend/frontend app that doesn't exist here). Lints every Markdown, YAML (incl. GitHub Actions schema via `actionlint`), and JSON file; runs ShellCheck on `audit/*.sh` and PSScriptAnalyzer on `audit/*.ps1`; then self-audits by running `audit/run-audit.sh .` against the repo as a smoke test. |
 | `.github/workflows/release.yml` | release-please, wired exactly as `RELEASE_GUIDE.md` describes. |
 | `.github/dependabot.yml` | `github-actions` ecosystem, weekly — keeps the *active* workflow's pinned actions current. See §4 for a coverage gap this doesn't close. |
@@ -127,7 +127,7 @@ low-risk drift).
 
 Ran `bash audit/run-audit.sh .` against this repo (Git Bash, 2026-09-17):
 
-```
+```text
 ==== Result: 4 PASS, 6 WARN, 0 FAIL ====
 ==== Verdict: ACCEPTED RISK — review warnings before deploying ====
 ```

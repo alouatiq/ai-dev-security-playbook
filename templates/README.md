@@ -7,7 +7,7 @@ project's `security/` folder and fill in the placeholders.
 ## Files
 
 | File | Purpose | Can it be auto-generated? |
-|---|---|---|
+| --- | --- | --- |
 | `CYB_REPORT_TEMPLATE.md` | Point-in-time security audit report, standards-mapped (OWASP/ASVS/CIS), with executive summary and per-finding remediation. | **Mostly yes** — `../audit/run-audit.ps1` / `.sh` auto-generates a populated version of this structure (`CYB_report_<timestamp>.md`) from the current scan results. Use this template directly only if you're writing a deeper manual review (pentest response, architecture-level findings) that goes beyond what the automated scanner checks. |
 | `BIA_ACP_TEMPLATE.md` | Business Impact Analysis addendum — Confidentiality/Integrity/Availability (ACP) rating, impact analysis, sign-off. | **No** — the ratings require a human business judgment call. `../audit/scaffold-bia-acp.ps1` / `.sh` scaffolds the boilerplate and auto-fills the "known open items" table from the latest audit report, but the rating sections must be completed by a person and routed for Cyber Security validation. |
 

@@ -23,6 +23,7 @@ been released.
 ## Scope
 
 In scope:
+
 - Logic errors in `audit/run-audit.sh` / `audit/run-audit.ps1` that cause a
   real, exploitable condition (e.g. hardcoded secrets, SQL injection, XSS
   sinks, unauthenticated routes) to be reported as `PASS`.
@@ -31,6 +32,7 @@ In scope:
 - Secrets or credentials accidentally committed to this repository.
 
 Out of scope:
+
 - Findings in a project that merely *used* this playbook — report those to
   that project's own maintainers, not here.
 - The generic CI/CD pipeline templates under `pipelines/` are intentionally

@@ -3,7 +3,7 @@
 ## Files
 
 | File | Purpose |
-|---|---|
+| --- | --- |
 | `.gitlab-ci.yml` | Full pipeline: lint → build → test → security → quality → deploy, plus GitLab's built-in SAST/Dependency-Scanning/Secret-Detection/Container-Scanning templates. Copy to the repo root as `.gitlab-ci.yml`. |
 | `renovate.json` | Weekly dependency update MRs (GitLab has no native Dependabot equivalent; Renovate is the standard substitute). Copy to the repo root and enable the Renovate GitLab integration/bot for the project. |
 | `release-job.example.yml` | `release` job running `semantic-release`; merge into `.gitlab-ci.yml` and add `release` to the `stages:` list. See `../../RELEASE_GUIDE.md`. |

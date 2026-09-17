@@ -29,7 +29,7 @@ checks lives in [`../README.md`](../README.md) (the checklist) and
 ## 1. Standards this audit maps to
 
 | Standard | Why it applies |
-|----------|----------------|
+| ---------- | ---------------- |
 | OWASP Top 10 (2021) | General web app risk baseline |
 | OWASP API Security Top 10 (2023) | Applies to any API-first backend |
 | OWASP ASVS 4.0 | Verification-level controls (auth, transport, config) |
@@ -43,7 +43,7 @@ checks lives in [`../README.md`](../README.md) (the checklist) and
 <1–2 paragraph narrative: what's solid, what's the dominant risk, what to fix first.>
 
 | Severity | Count | IDs |
-|----------|-------|-----|
+| ---------- | ------- | ----- |
 | 🔴 Critical/High | | |
 | 🟠 Medium | | |
 | 🟡 Low / Info | | |
@@ -58,6 +58,7 @@ checks lives in [`../README.md`](../README.md) (the checklist) and
 > One subsection per finding that isn't a clean pass. Copy this block per finding.
 
 ### 🔴 <ID> — <short title>
+
 **Standards:** <OWASP/ASVS/CWE reference(s)>
 **Where:** `<file:line>` — link into the repo.
 **Detail:** <what's wrong and why it matters>

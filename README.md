@@ -8,7 +8,7 @@ This folder is **not** part of any single project's repo. Copy the pieces you
 need into your project (or point the audit script at your repo path) — do not
 commit this folder itself unless you intentionally want to vendor it.
 
-```
+```text
 ai-dev-security-playbook/
 ├── README.md                 ← this file
 ├── INTEGRATION_GUIDE.md       ← how to add and maintain the playbook in another repo
@@ -79,14 +79,17 @@ behavior, start with [`INTEGRATION_GUIDE.md`](INTEGRATION_GUIDE.md).
    (GitHub) or `release-job.example.yml` (GitLab).
 4. **Run the audit** locally (or wire it into CI as a gate) before anything
    goes to `dev`:
+
    ```powershell
    # Windows
    pwsh -File audit\run-audit.ps1 -RepoPath C:\path\to\your\repo
    ```
+
    ```bash
    # Linux / macOS / Git-Bash
    bash audit/run-audit.sh /path/to/your/repo
    ```
+
 5. **Read the verdict** printed at the end (and saved under
    `audit/reports/` in your repo). Act on it before deploying — see §3.
 6. **For a formal point-in-time report or a BIA/ACP addendum**, see
@@ -107,36 +110,42 @@ either alone).
 Legend: **[A]** = automated by `run-audit` · **[M]** = manual, deployment-dependent.
 
 ### A. Authentication & access control
+
 - **[M]** Every API route requires a valid identity (JWT / OAuth2 / API key / proxy auth). No credential travels in a **query string** (CWE-598).
 - **[A]** Source code declares an auth/security dependency on API routes (`Depends(...)`, `Security(...)`, `HTTPBearer`, `OAuth2`, middleware, guards, decorators).
 - **[M]** Authorization is enforced — a caller can only reach data it's entitled to.
 - **[M]** Data-access events are logged with the authenticated principal.
 
 ### B. Transport & network
+
 - **[M]** App is served over **HTTPS**; HTTP redirects to HTTPS.
 - **[A]** No hardcoded `http://` base URLs in the frontend API client (informational warning only — some are legitimate, e.g. local dev).
 - **[M]** Service is not bound to `0.0.0.0` in production without a firewall/proxy in front.
 - **[A]** CORS is **not** a catch-all wildcard (`allow_origin_regex=".*"`, `Access-Control-Allow-Origin: *` with credentials, etc.).
 
 ### C. Application hardening
+
 - **[M]** Security headers present: `Content-Security-Policy`, `X-Content-Type-Options: nosniff`, `X-Frame-Options`/`frame-ancestors`, `Referrer-Policy`, `Strict-Transport-Security`.
 - **[M]** Rate limiting / request timeouts protect expensive endpoints.
 - **[A]** SQL stays parameterized — no f-string/format-string interpolation of variables into query text.
 - **[A]** No obvious XSS sinks (`dangerouslySetInnerHTML`, `.innerHTML =`, `eval(`) in frontend source.
 
 ### D. Secrets & identity
+
 - **[A]** No `.env`, key, certificate, or token-cache files tracked by git.
 - **[M]** Any token cache / credential file on disk is OS-permission-protected (e.g. `0600`).
 - **[M]** OAuth/OIDC app registration is dedicated to this app, not a shared/public client ID.
 - **[M]** DB/service connection info is environment-driven, not hardcoded.
 
 ### E. Dependencies & supply chain
+
 - **[A]** `npm audit` reports no High/Critical vulnerabilities (for every `package.json` found).
 - **[A]** `pip-audit` reports no known vulnerabilities (for every `requirements*.txt` found).
 - **[A]** Dependencies are pinned (`==`, lockfile with hashes), not open `>=`/`~=` ranges.
 - **[M]** Deployments reference container images by immutable digest (`@sha256:...`), not `latest`.
 
 ### F. CI/CD & containers
+
 - **[M]** CI runs dependency audits, SAST (CodeQL/Bandit/Semgrep), and secret scanning (gitleaks/trufflehog) on every change.
 - **[M]** CD scans built images (Trivy/Grype) and blocks push on High/Critical.
 - **[A]** Every `Dockerfile` found sets a non-root `USER`.
@@ -144,6 +153,7 @@ Legend: **[A]** = automated by `run-audit` · **[M]** = manual, deployment-depen
 - **[M]** Pushes straight to the default branch are blocked; merges go through gated CI/PR review.
 
 ### G. Governance
+
 - **[M]** Logging uses a structured logger (levels), not bare `print`/`console.log`; no upstream response bodies echoed verbatim.
 - **[M]** A `SECURITY.md` with a disclosure contact exists at the repo root.
 
@@ -156,7 +166,7 @@ into one of three deploy-readiness verdicts, printed at the end and written
 to `audit/reports/audit-report-<timestamp>.md`:
 
 | Verdict | Meaning | Action |
-|---|---|---|
+| --- | --- | --- |
 | 🟢 **LOW RISK** | All automated controls pass. No criticals, no warnings. | Safe to deploy to `dev`. |
 | 🟡 **ACCEPTED RISK** | No criticals/highs failed, but warnings exist (e.g. unpinned deps, missing Dockerfile `USER`, informational `http://` usage). | Deployable to `dev` if the team explicitly accepts the listed risks; fix before `prod`. |
 | 🔴 **CRITICAL — DO NOT DEPLOY** | At least one Critical/High control failed (no auth on API routes, SQL injection risk, XSS sink, secret committed, High/Critical CVE). | Block the deploy. Fix the listed FAILs, re-run the audit. |
@@ -164,7 +174,7 @@ to `audit/reports/audit-report-<timestamp>.md`:
 Severity mapping used by the script:
 
 | ID | Control | Severity |
-|---|---|---|
+| --- | --- | --- |
 | G-01 | SQL injection risk (unparameterized query) | 🔴 Critical |
 | G-03 | Secret/key file tracked by git | 🔴 Critical |
 | F-01 | No auth dependency on API routes | 🔴 Critical |
@@ -202,6 +212,7 @@ flowchart LR
   bumps (GitLab has no native Dependabot).
 
 Both templates:
+
 - Block merges to the default branch outside of reviewed PRs/MRs.
 - Fail the pipeline on any High/Critical dependency CVE or SAST finding.
 - Enforce a minimum test-coverage threshold before allowing a merge.

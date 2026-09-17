@@ -3,7 +3,7 @@
 ## Files
 
 | File | Purpose |
-|---|---|
+| --- | --- |
 | `ci.yml` | Runs on every push to a non-`main` branch. Stages: lint → build → test → security-scan → quality-gate. Copy to `.github/workflows/ci.yml`. |
 | `cd.yml` | Runs on push to `main` (i.e. after a PR merge). Builds the backend/frontend Docker images, scans them with Trivy, and pushes only if the scan passes. Copy to `.github/workflows/cd.yml`. |
 | `dependabot.yml` | Weekly dependency update PRs for Docker, pip, npm, and GitHub Actions themselves. Copy to `.github/dependabot.yml`. |

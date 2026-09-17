@@ -10,7 +10,7 @@ stages, release automation) onto a different stack.
 ## 1. Recommended base stack
 
 | Layer | Choice | Why |
-|---|---|---|
+| --- | --- | --- |
 | Backend | **Python — FastAPI** (default) or **Django** (if you need an admin panel, ORM-heavy CRUD, or built-in auth/user management out of the box) | FastAPI: async-first, typed (Pydantic), minimal, best for APIs consumed by a separate frontend. Django: batteries-included, better when the backend also needs server-rendered views, an admin UI, or a mature migrations/ORM story. |
 | Frontend | **React** (with **Vite** for the dev server/bundler, **TypeScript**) | Widest ecosystem, easiest to hire for, pairs well with either backend choice via a REST/JSON API. |
 | Database | PostgreSQL (or the managed equivalent — Azure SQL/RDS) | Parameterized-query support, mature tooling, works identically with FastAPI (SQLAlchemy/asyncpg) or Django (built-in ORM). |
@@ -27,7 +27,7 @@ project and you get the whole playbook working with **zero changes**.
 ### FastAPI vs Django — quick decision guide
 
 | Need | Pick |
-|---|---|
+| --- | --- |
 | Pure JSON API, async I/O, OpenAPI docs auto-generated | FastAPI |
 | Server-rendered admin/back-office screens, built-in user model & permissions | Django (+ Django REST Framework if it also needs an API) |
 | Small team, want the least boilerplate | FastAPI |
@@ -43,7 +43,7 @@ image scan → push). What changes is *which tool* implements each stage.
 Swap the row for your stack:
 
 | Concern | Python (FastAPI/Django) | Node/Express | Java/Spring Boot | Go |
-|---|---|---|---|---|
+| --- | --- | --- | --- | --- |
 | Lint | `ruff` | `eslint` | `checkstyle`/`spotbugs` | `golangci-lint` |
 | Dependency file | `requirements*.txt` / `pyproject.toml` | `package.json` | `pom.xml`/`build.gradle` | `go.mod` |
 | Dependency CVE scan | `pip-audit` | `npm audit` | `mvn dependency-check` / OWASP Dependency-Check | `govulncheck` |
@@ -86,7 +86,7 @@ Swap the row for your stack:
 Whatever stack you pick, keep this shape so the audit script and pipelines
 work without extra configuration:
 
-```
+```text
 your-repo/
 ├── backend/            (or set BACKEND_DIR="" if there is none)
 │   ├── Dockerfile

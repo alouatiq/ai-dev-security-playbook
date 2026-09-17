@@ -7,6 +7,15 @@ config:
   MD013: false # line-length — tables and prose here are intentionally long
   MD024: # no-duplicate-heading
     siblings_only: true
-  MD033: false # no-inline-html — mermaid/HTML snippets appear in code fences already, but be permissive
+  MD033: false # no-inline-html — permissive for occasional inline HTML/snippets
   MD041: false # first-line-heading — not every file needs to start with an H1
   MD034: false # bare URLs used intentionally in a few places (e.g. contact links)
+  MD036: false # emphasis-as-heading — generated reports bold a "Verdict:" line by design, not a heading
+  MD060: false # table-column-style — hand-aligning every markdown table's pipes is not this repo's convention
+
+# Generated reports are machine output, not authored documentation — don't
+# lint them (audit/reports/ is gitignored; security/reports/ is a committed
+# curated copy of the same generator's output).
+ignores:
+  - "audit/reports/**"
+  - "security/reports/**"
