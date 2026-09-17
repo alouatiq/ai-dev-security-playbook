@@ -165,3 +165,14 @@ with no stated terms.
 self-consistent (`.sh`/`.ps1` parity restored).** No Critical/High findings
 against this repo. The one open item (§6) needs the maintainer's decision,
 not an automated fix.
+
+**Update (2026-09-17, end of day):** the loop was closed end-to-end —
+release-please's first PR was merged, cutting
+[`v0.2.0`](https://github.com/alouatiq/ai-dev-security-playbook/releases/tag/v0.2.0);
+all four Dependabot PRs it triggered (bumping `actions/checkout`,
+`actions/upload-artifact`, `googleapis/release-please-action`, and
+`DavidAnson/markdownlint-cli2-action` to their current major versions) were
+merged; `ci.yml`'s 6 jobs (markdown/yaml/json lint, ShellCheck,
+PSScriptAnalyzer, self-audit) are green on `main` post-merge. The pipeline
+and release mechanisms this document reviews are no longer just configured —
+they've each fired for real, successfully, at least once.
