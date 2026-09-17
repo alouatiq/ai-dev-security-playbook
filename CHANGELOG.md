@@ -1,0 +1,20 @@
+# Changelog
+
+## [0.2.0](https://github.com/alouatiq/ai-dev-security-playbook/compare/v0.1.0...v0.2.0) (2026-09-17)
+
+
+### Features
+
+* **audit:** add cross-platform security checks ([5f10e11](https://github.com/alouatiq/ai-dev-security-playbook/commit/5f10e1159eb383a89ae18439145cde2ee52fa523))
+* **audit:** identify playbook source in generated reports ([a07302e](https://github.com/alouatiq/ai-dev-security-playbook/commit/a07302e7f8541b8bfa58e349c9cca376f200d4d6))
+* **ci:** activate self-validating CI, release automation, and dependency updates ([1efca89](https://github.com/alouatiq/ai-dev-security-playbook/commit/1efca897725928d64b928b52082253ecacfeb019))
+* **github:** add secure CI and deployment workflows ([e6c8447](https://github.com/alouatiq/ai-dev-security-playbook/commit/e6c84475c7eb7e176f1b0221bffce9cdfa8ee859))
+* **gitlab:** add secure CI and release templates ([0dc7e63](https://github.com/alouatiq/ai-dev-security-playbook/commit/0dc7e6383981c506505991068f8a6476b1a84a28))
+* **governance:** scaffold BIA and ACP addenda ([204b45a](https://github.com/alouatiq/ai-dev-security-playbook/commit/204b45ab5f906e56d3103f3e7b758d5ce0c92ee1))
+* **release:** add GitHub release automation ([4c9fcea](https://github.com/alouatiq/ai-dev-security-playbook/commit/4c9fcea1760af2986db391f3d3bb7ff6b8a78dc3))
+
+
+### Bug Fixes
+
+* **audit:** correct dependency-pinning false-pass and bash/PowerShell parity ([13fd4b1](https://github.com/alouatiq/ai-dev-security-playbook/commit/13fd4b1cc2e70c96ee3a23eda19b42e9714307ef))
+* **ci:** resolve markdownlint and actionlint/shellcheck findings ([1e1f7f4](https://github.com/alouatiq/ai-dev-security-playbook/commit/1e1f7f40f1e833385e32f8d6cf0034c783bd4b82))
