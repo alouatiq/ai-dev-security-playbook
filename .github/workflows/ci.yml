@@ -121,7 +121,7 @@ jobs:
           # Exit code is 0 unless the verdict is CRITICAL — see audit/README.md.
       - name: Upload generated reports
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: self-audit-reports
           path: audit/reports/
