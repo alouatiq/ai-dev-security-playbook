@@ -1,0 +1,16 @@
+version: 2
+updates:
+  # This repo's only real "dependencies" are the third-party Actions pinned
+  # in its active workflows (.github/workflows/*). The copies of ci.yml/
+  # cd.yml/release.yml under pipelines/github/ are consumer templates, not
+  # active workflows, so Dependabot (which only scans .github/workflows/)
+  # cannot see them — review their pinned action versions by hand
+  # periodically (see security/README.md).
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    labels: [dependencies, ci]
+    commit-message:
+      prefix: "chore(ci)"

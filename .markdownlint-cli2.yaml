@@ -1,0 +1,12 @@
+# markdownlint-cli2 config — relax rules that fight this repo's writing
+# style (long lines in tables/explanatory prose, ATX headings with trailing
+# punctuation in some titles, etc.) without disabling the structural rules
+# that actually catch broken docs.
+config:
+  default: true
+  MD013: false # line-length — tables and prose here are intentionally long
+  MD024: # no-duplicate-heading
+    siblings_only: true
+  MD033: false # no-inline-html — mermaid/HTML snippets appear in code fences already, but be permissive
+  MD041: false # first-line-heading — not every file needs to start with an H1
+  MD034: false # bare URLs used intentionally in a few places (e.g. contact links)

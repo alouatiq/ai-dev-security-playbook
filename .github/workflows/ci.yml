@@ -1,0 +1,128 @@
+name: CI
+
+# This repo is the playbook itself (docs + shell/PowerShell scripts + CI/CD
+# templates), not an application — so this pipeline validates the tooling
+# other repos will copy, instead of the generic backend/frontend template in
+# pipelines/github/ci.yml (that one is for consumers, not for this repo).
+#
+# Stages: lint (markdown/yaml/json) -> validate (shellcheck/PSScriptAnalyzer/
+# actionlint) -> self-audit (dogfood audit/run-audit.sh against this repo).
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ── Markdown lint ────────────────────────────────────────────────────────
+  markdown-lint:
+    name: lint-markdown
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: markdownlint
+        uses: DavidAnson/markdownlint-cli2-action@v19
+        with:
+          globs: "**/*.md"
+
+  # ── YAML validity + GitHub Actions schema check ─────────────────────────
+  yaml-lint:
+    name: lint-yaml
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: yamllint (all YAML files)
+        uses: ibiqlik/action-yamllint@v3
+        with:
+          config_data: |
+            extends: default
+            rules:
+              line-length: disable
+              document-start: disable
+              truthy:
+                allowed-values: ["true", "false", "on"]
+              comments-indentation: disable
+              comments:
+                min-spaces-from-content: 1
+
+      - name: actionlint (GitHub Actions workflow shape)
+        run: |
+          set -euo pipefail
+          bash <(curl -fsSL https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
+          # Real, active workflows for this repo:
+          ./actionlint .github/workflows/*.yml
+          # Consumer templates: same schema, just not wired to *this* repo's
+          # branches/vars, so lint them independently.
+          ./actionlint pipelines/github/ci.yml pipelines/github/cd.yml pipelines/github/release.yml
+
+  # ── JSON validity ─────────────────────────────────────────────────────────
+  json-lint:
+    name: lint-json
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate every tracked *.json parses
+        run: |
+          set -euo pipefail
+          status=0
+          while IFS= read -r -d '' f; do
+            python3 -m json.tool "$f" > /dev/null || { echo "::error file=$f::invalid JSON"; status=1; }
+          done < <(git ls-files -z -- '*.json')
+          exit $status
+
+  # ── Shell scripts (audit/*.sh) ───────────────────────────────────────────
+  shellcheck:
+    name: lint-shell
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: ShellCheck
+        uses: ludeeus/action-shellcheck@2.0.0
+        with:
+          scandir: "./audit"
+          severity: warning
+
+  # ── PowerShell scripts (audit/*.ps1) ────────────────────────────────────
+  psscriptanalyzer:
+    name: lint-powershell
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: PSScriptAnalyzer
+        shell: pwsh
+        run: |
+          Set-StrictMode -Version Latest
+          Install-Module -Name PSScriptAnalyzer -Force -Scope CurrentUser -ErrorAction Stop
+          $results = Get-ChildItem -Path ./audit -Filter *.ps1 |
+            ForEach-Object { Invoke-ScriptAnalyzer -Path $_.FullName -Severity Warning,Error }
+          $results | Format-Table -AutoSize
+          $blocking = $results | Where-Object { $_.Severity -eq 'Error' }
+          if ($blocking) {
+            Write-Host "::error::PSScriptAnalyzer found Error-severity issues"
+            exit 1
+          }
+
+  # ── Self-audit: dogfood the tool against this repo ──────────────────────
+  self-audit:
+    name: self-audit
+    runs-on: ubuntu-latest
+    needs: [markdown-lint, yaml-lint, json-lint, shellcheck, psscriptanalyzer]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run audit/run-audit.sh against this repo
+        run: |
+          chmod +x audit/run-audit.sh
+          bash audit/run-audit.sh .
+          # Exit code is 0 unless the verdict is CRITICAL — see audit/README.md.
+      - name: Upload generated reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: self-audit-reports
+          path: audit/reports/
+          retention-days: 30
