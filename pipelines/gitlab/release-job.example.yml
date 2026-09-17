@@ -9,7 +9,7 @@
 #   fix: / perf:               -> PATCH (fix)
 #   feat!:  / BREAKING CHANGE  -> MAJOR (breaking change)
 #
-# See ../../RELEASE_GUIDE.md for the full convention and versioning policy.
+# See ../../docs/RELEASE_GUIDE.md for the full convention and versioning policy.
 #
 # Requires: a project access token or CI/CD variable GITLAB_TOKEN with
 # `api` scope (Settings > CI/CD > Variables), used by @semantic-release/gitlab

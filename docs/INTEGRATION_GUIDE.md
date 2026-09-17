@@ -70,7 +70,7 @@ pipelines/github/dependabot.yml  -> .github/dependabot.yml
 
 For GitLab, copy `pipelines/gitlab/.gitlab-ci.yml` to the repository root and
 add the optional Renovate and release files described in
-[`pipelines/gitlab/README.md`](pipelines/gitlab/README.md).
+[`pipelines/gitlab/README.md`](../pipelines/gitlab/README.md).
 
 Adjust directory, runtime, registry, and coverage variables before enabling
 the workflows. Never copy both platform configurations into the same project.

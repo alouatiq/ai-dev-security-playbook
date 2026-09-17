@@ -6,7 +6,7 @@
 | --- | --- |
 | `.gitlab-ci.yml` | Full pipeline: lint → build → test → security → quality → deploy, plus GitLab's built-in SAST/Dependency-Scanning/Secret-Detection/Container-Scanning templates. Copy to the repo root as `.gitlab-ci.yml`. |
 | `renovate.json` | Weekly dependency update MRs (GitLab has no native Dependabot equivalent; Renovate is the standard substitute). Copy to the repo root and enable the Renovate GitLab integration/bot for the project. |
-| `release-job.example.yml` | `release` job running `semantic-release`; merge into `.gitlab-ci.yml` and add `release` to the `stages:` list. See `../../RELEASE_GUIDE.md`. |
+| `release-job.example.yml` | `release` job running `semantic-release`; merge into `.gitlab-ci.yml` and add `release` to the `stages:` list. See `../../docs/RELEASE_GUIDE.md`. |
 | `.releaserc.example.json` | Copy to repo root as `.releaserc.json`; configures the semantic-release plugin chain (changelog + GitLab release + git commit-back). |
 
 ## Setup checklist
@@ -43,7 +43,7 @@
 8. **Release automation:** add `release` to the `stages:` list, merge the
    `release:` job from `release-job.example.yml` into `.gitlab-ci.yml`, copy
    `.releaserc.example.json` to the repo root as `.releaserc.json`, and add a
-   `GITLAB_TOKEN` CI/CD variable (API scope) — see `../../RELEASE_GUIDE.md`.
+   `GITLAB_TOKEN` CI/CD variable (API scope) — see `../../docs/RELEASE_GUIDE.md`.
 
 ## Notes
 

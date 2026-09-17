@@ -7,7 +7,7 @@ posture — as distinct from `audit/run-audit.*`, which audits *other*
 repositories' application code, not this one.
 
 This document is the manual review this playbook itself calls for in
-`RELEASE_GUIDE.md` §3 ("CI is green... audit verdict is LOW/ACCEPTED RISK")
+`docs/RELEASE_GUIDE.md` §3 ("CI is green... audit verdict is LOW/ACCEPTED RISK")
 and `README.md` §5 ("run the audit, act on the verdict") — applied to the
 playbook's own repo before treating it as production-ready to hand to other
 projects.
@@ -19,7 +19,7 @@ projects.
 | Area | Finding |
 | --- | --- |
 | **CI/CD** | `.github/` did not exist. `pipelines/github/*` and `pipelines/gitlab/*` are templates for *consumers* — nothing was validating this repo's own scripts, YAML, or docs on every change. |
-| **Release** | No git tags, no GitHub Releases, despite `RELEASE_GUIDE.md` and `pipelines/github/release.yml` documenting release-please as the intended mechanism. `.release-please-manifest.json` / `release-please-config.json` did not exist at the repo root. |
+| **Release** | No git tags, no GitHub Releases, despite `docs/RELEASE_GUIDE.md` and `pipelines/github/release.yml` documenting release-please as the intended mechanism. `.release-please-manifest.json` / `release-please-config.json` did not exist at the repo root. |
 | **Governance files** | No `LICENSE`, `SECURITY.md`, or `CONTRIBUTING.md` — three of the items `README.md` §2.G requires *of consuming projects* were absent from the playbook's own repo. |
 | **Audit scripts** | Two real bugs found (below) in `audit/run-audit.sh` and (one of them) `audit/run-audit.ps1`. |
 | **`.gitignore`** | Did not exist. `audit/README.md` documents `audit/reports/` as "generated at runtime, not checked in" but nothing enforced that. |
@@ -90,7 +90,7 @@ convention to trigger).
 | Added | Purpose |
 | --- | --- |
 | `.github/workflows/ci.yml` | **New**, written for *this* repo (not copied from `pipelines/github/ci.yml`, which assumes a backend/frontend app that doesn't exist here). Lints every Markdown, YAML (incl. GitHub Actions schema via `actionlint`), and JSON file; runs ShellCheck on `audit/*.sh` and PSScriptAnalyzer on `audit/*.ps1`; then self-audits by running `audit/run-audit.sh .` against the repo as a smoke test. |
-| `.github/workflows/release.yml` | release-please, wired exactly as `RELEASE_GUIDE.md` describes. |
+| `.github/workflows/release.yml` | release-please, wired exactly as `docs/RELEASE_GUIDE.md` describes. |
 | `.github/dependabot.yml` | `github-actions` ecosystem, weekly — keeps the *active* workflow's pinned actions current. See §4 for a coverage gap this doesn't close. |
 | `release-please-config.json` / `.release-please-manifest.json` | `package-name: ai-dev-security-playbook`, `release-type: simple`, starting version `0.1.0` (the same convention the playbook documents for consumers — bump to `1.0.0` by hand whenever the maintainer considers the API/checklist stable and committed). |
 | `.gitignore` | Enforces the documented "`audit/reports/` is generated, not committed" rule (nothing did before). |
@@ -153,7 +153,7 @@ content should exist here) and all passed.
 may be reused, whether it's open-source and under what terms, or
 proprietary), not something to default silently. Recommendation: pick a
 license (MIT/Apache-2.0 are the common choices for reusable tooling like
-this) and add it, since `INTEGRATION_GUIDE.md` already invites other
+this) and add it, since `docs/INTEGRATION_GUIDE.md` already invites other
 repos/teams to copy and vendor this content — right now that's happening
 with no stated terms.
 

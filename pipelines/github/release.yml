@@ -10,7 +10,7 @@ name: release
 #   fix: / perf:               -> PATCH (fix)
 #   feat!:  / BREAKING CHANGE  -> MAJOR (breaking change)
 #
-# See ../../RELEASE_GUIDE.md for the full convention and versioning policy.
+# See ../../docs/RELEASE_GUIDE.md for the full convention and versioning policy.
 on:
   push:
     branches: [main]

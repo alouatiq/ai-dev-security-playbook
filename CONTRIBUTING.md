@@ -9,7 +9,7 @@ and a note in `CHANGELOG.md` (generated automatically — see below).
 
 1. Read `README.md` (the checklist and verdict tiers), and whichever of
    `audit/README.md`, `pipelines/README.md`, `templates/README.md`,
-   `RELEASE_GUIDE.md`, `TECH_STACK.md` covers the area you're touching.
+   `docs/RELEASE_GUIDE.md`, `docs/TECH_STACK.md` covers the area you're touching.
 2. If you're changing a check in `audit/run-audit.sh`, make the **same**
    change in `audit/run-audit.ps1` (and vice versa) — the two must stay in
    parity. Run both locally against a real repo (or this one) before
@@ -22,7 +22,7 @@ and a note in `CHANGELOG.md` (generated automatically — see below).
 ## Commit messages
 
 [Conventional Commits](https://www.conventionalcommits.org/) — see
-`RELEASE_GUIDE.md`. `fix:`/`feat:`/`feat!:` drive the automated version bump;
+`docs/RELEASE_GUIDE.md`. `fix:`/`feat:`/`feat!:` drive the automated version bump;
 `docs:`/`chore:`/`ci:`/`test:`/`refactor:` do not bump the version but still
 appear in the changelog.
 

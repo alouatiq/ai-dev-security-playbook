@@ -5,7 +5,7 @@ security posture lives here — as opposed to `audit/`, which is the portable
 *tool* this playbook ships for auditing **other** repos, and `templates/`,
 which holds the blank templates that tool's reports are based on.
 
-This mirrors the layout `TECH_STACK.md` §3 prescribes for any project that
+This mirrors the layout `docs/TECH_STACK.md` §3 prescribes for any project that
 adopts this playbook (`security/` = your own CYB/BIA reports; `audit/` +
 `templates/` = the vendored, reusable tooling). The playbook dogfoods its
 own convention here.

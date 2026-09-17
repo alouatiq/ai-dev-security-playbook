@@ -11,9 +11,10 @@ commit this folder itself unless you intentionally want to vendor it.
 ```text
 ai-dev-security-playbook/
 ├── README.md                 ← this file
-├── INTEGRATION_GUIDE.md       ← how to add and maintain the playbook in another repo
-├── RELEASE_GUIDE.md            ← Conventional Commits, versioning, changelog, release automation
-├── TECH_STACK.md                ← recommended base stack + how to adapt to other tech
+├── docs/
+│   ├── INTEGRATION_GUIDE.md    ← how to add and maintain the playbook in another repo
+│   ├── RELEASE_GUIDE.md         ← Conventional Commits, versioning, changelog, release automation
+│   └── TECH_STACK.md             ← recommended base stack + how to adapt to other tech
 ├── SECURITY.md                    ← vulnerability disclosure policy for this repo
 ├── CONTRIBUTING.md                  ← how to change this repo without breaking consumers
 ├── security/                          ← THIS repo's own audit trail (see security/README.md)
@@ -44,14 +45,14 @@ ai-dev-security-playbook/
     │   ├── ci.yml               ← lint → build → test → security → quality gate
     │   ├── cd.yml                ← build/push image, Trivy-gated
     │   ├── dependabot.yml         ← weekly dependency bumps (docker/pip/npm)
-    │   ├── release.yml             ← release-please workflow (see RELEASE_GUIDE.md)
+    │   ├── release.yml             ← release-please workflow (see docs/RELEASE_GUIDE.md)
     │   ├── release-please-config.example.json
     │   └── release-please-manifest.example.json
     └── gitlab/
         ├── README.md           ← GitLab-specific setup checklist
         ├── .gitlab-ci.yml        ← same stages, GitLab CI syntax + built-in scanners
         ├── renovate.json          ← dependency bumps (GitLab has no Dependabot)
-        ├── release-job.example.yml ← semantic-release job to merge in (see RELEASE_GUIDE.md)
+        ├── release-job.example.yml ← semantic-release job to merge in (see docs/RELEASE_GUIDE.md)
         └── .releaserc.example.json
 ```
 
@@ -59,22 +60,22 @@ ai-dev-security-playbook/
 > is this playbook's **own** CI (lints/validates the scripts and YAML you're
 > about to copy, and self-audits this repo — see `security/README.md`).
 > `pipelines/github/` and `pipelines/gitlab/` are **templates for the repo
-> you're integrating this into** — see §1 below and `INTEGRATION_GUIDE.md`.
+> you're integrating this into** — see §1 below and `docs/INTEGRATION_GUIDE.md`.
 
 ---
 
 ## 1. How to use this playbook
 
 For copy commands, recommended destination paths, updates, and attribution
-behavior, start with [`INTEGRATION_GUIDE.md`](INTEGRATION_GUIDE.md).
+behavior, start with [`docs/INTEGRATION_GUIDE.md`](docs/INTEGRATION_GUIDE.md).
 
-1. **Pick your tech stack.** See `TECH_STACK.md` for the recommended default
+1. **Pick your tech stack.** See `docs/TECH_STACK.md` for the recommended default
    (Python FastAPI/Django + React) and how to retarget the audit/pipelines
    onto a different stack if needed.
 2. **Pick your CI/CD platform.** Copy `pipelines/github/*` into `.github/`
    (and `.github/workflows/`) **or** copy `pipelines/gitlab/*` into your repo
    root — whichever platform your project is hosted on. Don't add both.
-3. **Set up release automation.** See `RELEASE_GUIDE.md` — Conventional
+3. **Set up release automation.** See `docs/RELEASE_GUIDE.md` — Conventional
    Commits in, automated SemVer tag + changelog out, via `release.yml`
    (GitHub) or `release-job.example.yml` (GitLab).
 4. **Run the audit** locally (or wire it into CI as a gate) before anything

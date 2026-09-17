@@ -7,7 +7,7 @@
 | `ci.yml` | Runs on every push to a non-`main` branch. Stages: lint → build → test → security-scan → quality-gate. Copy to `.github/workflows/ci.yml`. |
 | `cd.yml` | Runs on push to `main` (i.e. after a PR merge). Builds the backend/frontend Docker images, scans them with Trivy, and pushes only if the scan passes. Copy to `.github/workflows/cd.yml`. |
 | `dependabot.yml` | Weekly dependency update PRs for Docker, pip, npm, and GitHub Actions themselves. Copy to `.github/dependabot.yml`. |
-| `release.yml` | Runs `release-please` on every push to `main` to maintain the standing release PR. Copy to `.github/workflows/release.yml`. See `../../RELEASE_GUIDE.md`. |
+| `release.yml` | Runs `release-please` on every push to `main` to maintain the standing release PR. Copy to `.github/workflows/release.yml`. See `../../docs/RELEASE_GUIDE.md`. |
 | `release-please-config.example.json` | Copy to repo root as `release-please-config.json`; set `package-name`. |
 | `release-please-manifest.example.json` | Copy to repo root as `.release-please-manifest.json`; tracks the current version. |
 
@@ -38,7 +38,7 @@
 6. Run `../../audit/run-audit.ps1` (or `.sh`) locally at least once before the
    first PR to establish a baseline verdict.
 7. Edit `release-please-config.json`'s `package-name` and (optionally)
-   `release-type` — see `../../RELEASE_GUIDE.md` for the Conventional Commits
+   `release-type` — see `../../docs/RELEASE_GUIDE.md` for the Conventional Commits
    convention this depends on.
 
 ## Notes

@@ -16,7 +16,7 @@ stages, release automation) onto a different stack.
 | Database | PostgreSQL (or the managed equivalent — Azure SQL/RDS) | Parameterized-query support, mature tooling, works identically with FastAPI (SQLAlchemy/asyncpg) or Django (built-in ORM). |
 | Containerization | Docker, one `Dockerfile` per service (`backend/Dockerfile`, `frontend/Dockerfile`), non-root `USER` | Matches every check in `audit/run-audit.ps1` (F-09) and both CI/CD templates as-is. |
 | CI/CD | `pipelines/github/` or `pipelines/gitlab/` (see `pipelines/README.md`) | Already parameterized for `backend/` + `frontend/` directory layout. |
-| Release automation | `release-please` (GitHub) / `semantic-release` (GitLab) | See `../RELEASE_GUIDE.md`. |
+| Release automation | `release-please` (GitHub) / `semantic-release` (GitLab) | See `RELEASE_GUIDE.md`. |
 
 This is the stack the audit script and both pipeline templates are
 pre-tuned for: `BACKEND_DIR=backend` (Python, `requirements*.txt`,
