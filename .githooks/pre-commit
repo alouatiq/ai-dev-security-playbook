@@ -1,0 +1,75 @@
+#!/usr/bin/env bash
+# ─────────────────────────────────────────────────────────────────────────────
+# Pre-commit secret scan — blocks a commit before a real secret ever reaches
+# git history. Working-tree scans (gitleaks dir .) and history scans (this
+# playbook's audit G-04) both only tell you AFTER the fact; this is the
+# barrier that stops it happening at all.
+#
+# One-time setup (per clone):
+#   git config core.hooksPath .githooks
+#
+# Uses gitleaks if installed; falls back to a small built-in check so there's
+# still SOME protection without it. Install gitleaks for real coverage:
+# https://github.com/gitleaks/gitleaks#installing
+# ─────────────────────────────────────────────────────────────────────────────
+set -uo pipefail
+
+ROOT="$(git rev-parse --show-toplevel)"
+STAGED="$(git diff --cached --name-only --diff-filter=ACM)"
+[[ -z "$STAGED" ]] && exit 0
+
+GITLEAKS_CONFIG=""
+[[ -f "$ROOT/.gitleaks.toml" ]] && GITLEAKS_CONFIG="--config $ROOT/.gitleaks.toml"
+
+if command -v gitleaks &>/dev/null; then
+    # shellcheck disable=SC2086
+    gitleaks protect --staged -v --redact $GITLEAKS_CONFIG --no-banner
+    STATUS=$?
+    if [[ $STATUS -ne 0 ]]; then
+        echo ""
+        echo "❌ Commit blocked: gitleaks found a likely secret in staged changes."
+        echo "   Fix: remove the secret, use an environment variable instead, and"
+        echo "   re-stage. If this is a false positive, add an allowlist entry to"
+        echo "   .gitleaks.toml (create one if the repo doesn't have it yet) with"
+        echo "   a comment explaining why."
+        exit 1
+    fi
+    exit 0
+fi
+
+# ── Fallback (no gitleaks binary): filename + pattern check ────────────────
+# Not a replacement for gitleaks — narrower, but better than nothing.
+echo "⚠️  gitleaks not installed — running a reduced fallback check only."
+echo "   Install for real coverage: https://github.com/gitleaks/gitleaks#installing"
+
+BLOCKED=0
+
+while IFS= read -r f; do
+    [[ -z "$f" ]] && continue
+    [[ -f "$f" ]] || continue
+
+    if [[ "$f" =~ [Ff]irebase.*[Aa]dminsdk|[Ss]erviceaccountkey|\.pem$|\.p12$|\.pfx$|\.jks$|\.keystore$|id_rsa$|id_ed25519$|(^|/)\.env$ ]]; then
+        echo "❌ $f — filename matches a known secret-file pattern"
+        BLOCKED=1
+        continue
+    fi
+
+    if grep -qiE -- '-----BEGIN (RSA |EC |DSA |OPENSSH )?PRIVATE KEY' "$f" 2>/dev/null; then
+        echo "❌ $f — contains a private key header"
+        BLOCKED=1
+    fi
+
+    if grep -qiE -- '(password|secret|token|api[_-]?key)[[:space:]]*[:=][[:space:]]*['"'"'"][A-Za-z0-9+/_-]{16,}['"'"'"]' "$f" 2>/dev/null; then
+        echo "❌ $f — looks like a hardcoded credential (password/secret/token/api_key literal)"
+        BLOCKED=1
+    fi
+done <<< "$STAGED"
+
+if [[ $BLOCKED -eq 1 ]]; then
+    echo ""
+    echo "❌ Commit blocked: possible secret in staged changes (fallback check)."
+    echo "   Install gitleaks for accurate detection, or fix the finding above."
+    exit 1
+fi
+
+exit 0

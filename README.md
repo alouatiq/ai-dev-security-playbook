@@ -134,6 +134,8 @@ Legend: **[A]** = automated by `run-audit` · **[M]** = manual, deployment-depen
 ### D. Secrets & identity
 
 - **[A]** No `.env`, key, certificate, or token-cache files tracked by git.
+- **[A]** No secret-like filename ever committed to git *history*, even if removed from tracking since — a working-tree-only check (the item above) cannot see this by construction. See §5 for why this matters.
+- **[A]** A pre-commit secret-scan hook (`.githooks/pre-commit`) is present in the repo, so a secret is caught before it's ever committed, not after.
 - **[M]** Any token cache / credential file on disk is OS-permission-protected (e.g. `0600`).
 - **[M]** OAuth/OIDC app registration is dedicated to this app, not a shared/public client ID.
 - **[M]** DB/service connection info is environment-driven, not hardcoded.
@@ -237,3 +239,13 @@ Both templates:
 - Keep this playbook **generic**: project-specific findings belong in that
   project's own `security/` folder (see SE_DI_PIP's `security/README.md` for
   a worked example), not in this shared copy.
+- **Install the pre-commit hook in every project you scaffold or work in**
+  (`git config core.hooksPath .githooks` — the hook itself is at
+  [`.githooks/pre-commit`](.githooks/pre-commit)). This is the barrier that
+  stops an AI agent (or a human) from ever committing a real secret in the
+  first place — a working-tree-only or history-only scan only tells you
+  *after* it already happened. A downstream project using this playbook had
+  exactly that: a Firebase private key and a Twilio auth token sat in git
+  history for months because nothing blocked the commit itself, and the
+  audit only ever checked the current tree. Don't repeat that — set up the
+  hook before writing the first line of code that touches credentials.

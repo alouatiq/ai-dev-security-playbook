@@ -114,6 +114,16 @@ elseif ($isShallow) { Add-Result -Id 'G-04' -Status 'WARN' -Severity 'Critical' 
 elseif (@($histSecrets).Count -gt 0) { Add-Result -Id 'G-04' -Status 'FAIL' -Severity 'Critical' -Msg ("Secret-like filenames ever committed to git history (even if removed since): " + ($histSecrets -join ', ') + " - rotate the credential(s) and consider a history purge (git filter-repo / BFG)") }
 else { Add-Result -Id 'G-04' -Status 'PASS' -Severity 'Critical' -Msg 'No secret-like filenames found anywhere in git history' }
 
+# --- G-06  Pre-commit secret-scan hook available (Medium) ---
+# Whether an individual dev has run `git config core.hooksPath .githooks` is
+# per-clone and can't be seen here, but the barrier being absent from the
+# repo entirely is the failure mode that matters - see README.md SS5.
+if (Test-Path (Join-Path $RepoPath ".githooks/pre-commit")) {
+    Add-Result -Id 'G-06' -Status 'PASS' -Severity 'Medium' -Msg 'Pre-commit secret-scan hook found at .githooks/pre-commit'
+} else {
+    Add-Result -Id 'G-06' -Status 'WARN' -Severity 'Medium' -Msg 'No .githooks/pre-commit found - nothing blocks a secret from being committed in the first place'
+}
+
 # --- G-01  SQL parameterization spot check (Critical) ---
 $banned = 'f"[^"]*\{[^}]+\}[^"]*"'
 $sqlHits = $null
@@ -283,6 +293,7 @@ $ControlInfo = @{
     'G-03'  = @{ Standard = 'OWASP A02:2021 (Cryptographic Failures), CWE-798';  Remediation = 'Remove secret from git history; rotate the credential; use a secret manager.' }
     'G-04'  = @{ Standard = 'OWASP A02:2021 (Cryptographic Failures), CWE-798';  Remediation = 'Rotate the credential immediately; purge from git history (git filter-repo / BFG); add the filename pattern to .gitignore.' }
     'G-05'  = @{ Standard = 'OWASP A06:2021 (Vulnerable Components)';           Remediation = 'Patch or replace npm packages with known CVEs (npm audit).' }
+    'G-06'  = @{ Standard = 'OWASP A02:2021 (Cryptographic Failures), CWE-798';  Remediation = 'Add .githooks/pre-commit (gitleaks-based) and run: git config core.hooksPath .githooks' }
 }
 
 $critCount = @($script:Results | Where-Object { $_.Severity -eq 'Critical' -and $_.Status -eq 'FAIL' }).Count

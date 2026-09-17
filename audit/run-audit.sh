@@ -122,6 +122,16 @@ else
   result 'G-04' 'WARN' 'Critical' 'Not a git repository — skipped'
 fi
 
+# --- G-06  Pre-commit secret-scan hook available (Medium) ---
+# Whether an individual dev has run `git config core.hooksPath .githooks` is
+# per-clone and can't be seen here, but the barrier being absent from the
+# repo entirely is the failure mode that matters — see README.md §5.
+if [[ -f "$REPO_PATH/.githooks/pre-commit" ]]; then
+  result 'G-06' 'PASS' 'Medium' 'Pre-commit secret-scan hook found at .githooks/pre-commit'
+else
+  result 'G-06' 'WARN' 'Medium' 'No .githooks/pre-commit found — nothing blocks a secret from being committed in the first place'
+fi
+
 # --- G-01  SQL parameterization spot check (Critical) ---
 FSTRING_PATTERN='f"[^"]*\{[^}]+\}[^"]*"|f'"'"'[^'"'"']*\{[^}]+\}[^'"'"']*'"'"''
 SQL_KEYWORDS='execute|cursor|SELECT|INSERT|UPDATE|DELETE|FROM|WHERE'
