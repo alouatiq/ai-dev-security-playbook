@@ -14,6 +14,18 @@ ai-dev-security-playbook/
 ├── INTEGRATION_GUIDE.md       ← how to add and maintain the playbook in another repo
 ├── RELEASE_GUIDE.md            ← Conventional Commits, versioning, changelog, release automation
 ├── TECH_STACK.md                ← recommended base stack + how to adapt to other tech
+├── SECURITY.md                    ← vulnerability disclosure policy for this repo
+├── CONTRIBUTING.md                  ← how to change this repo without breaking consumers
+├── security/                          ← THIS repo's own audit trail (see security/README.md)
+│   ├── README.md
+│   ├── PIPELINE_AND_RELEASE_REVIEW.md
+│   └── reports/                        ← dated CYB/audit reports from self-auditing this repo
+├── .github/                             ← this repo's OWN active CI/CD (see § below), not a template
+│   ├── workflows/ci.yml                  ← lint + validate + self-audit, on every push/PR
+│   ├── workflows/release.yml              ← release-please for the playbook's own version
+│   └── dependabot.yml                      ← keeps this repo's own Actions current
+├── release-please-config.json              ← this repo's own release-please config
+├── .release-please-manifest.json            ← this repo's own current version
 ├── audit/
 │   ├── README.md              ← how to run the audit / scaffold scripts
 │   ├── run-audit.ps1           ← Windows/PowerShell audit → verdict + 2 reports
@@ -42,6 +54,12 @@ ai-dev-security-playbook/
         ├── release-job.example.yml ← semantic-release job to merge in (see RELEASE_GUIDE.md)
         └── .releaserc.example.json
 ```
+
+> **Don't confuse the two pipelines.** `.github/workflows/` at the repo root
+> is this playbook's **own** CI (lints/validates the scripts and YAML you're
+> about to copy, and self-audits this repo — see `security/README.md`).
+> `pipelines/github/` and `pipelines/gitlab/` are **templates for the repo
+> you're integrating this into** — see §1 below and `INTEGRATION_GUIDE.md`.
 
 ---
 
