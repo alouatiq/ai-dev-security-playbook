@@ -45,6 +45,19 @@ find_files() {
   find "$REPO_PATH" -type f -name "$1" 2>/dev/null | grep -Ev "$EXCLUDE_REGEX" || true
 }
 
+any_file_matches() {
+  # any_file_matches <ERE pattern> <newline-separated file list>
+  # Loops per-file instead of `xargs`, so paths containing spaces are never
+  # word-split into bogus filenames (a real risk with `echo "$list" | xargs`).
+  local pattern="$1" files="$2" f
+  [[ -z "$files" ]] && return 1
+  while IFS= read -r f; do
+    [[ -n "$f" ]] || continue
+    grep -qE "$pattern" -- "$f" 2>/dev/null && return 0
+  done <<< "$files"
+  return 1
+}
+
 echo ""
 echo "==== Security audit: $REPO_PATH ===="
 echo "Tooling: $PLAYBOOK_NAME by $PLAYBOOK_MAINTAINER"
@@ -55,7 +68,7 @@ PY_FILES="$(find_files '*.py')"
 JS_TS_FILES="$( { find_files '*.ts'; find_files '*.tsx'; find_files '*.js'; } )"
 
 # --- F-03  CORS not wildcard (Medium) ---
-if [[ -n "$PY_FILES" ]] && echo "$PY_FILES" | xargs grep -lE 'allow_origin_regex\s*=\s*r?"\.\*"|Access-Control-Allow-Origin.*\*' 2>/dev/null | grep -q .; then
+if any_file_matches 'allow_origin_regex\s*=\s*r?"\.\*"|Access-Control-Allow-Origin.*\*' "$PY_FILES"; then
   result 'F-03' 'FAIL' 'Medium' 'CORS allows any origin (wildcard) in application code'
 else
   result 'F-03' 'PASS' 'Medium' 'CORS is not a catch-all wildcard'
@@ -63,8 +76,8 @@ fi
 
 # --- F-01  Auth dependency present on API routes (Critical) ---
 AUTH_HIT=0
-if [[ -n "$PY_FILES" ]] && echo "$PY_FILES" | xargs grep -lE 'Depends\(|Security\(|HTTPBearer|OAuth2|require_auth|jwt_required' 2>/dev/null | grep -q .; then AUTH_HIT=1; fi
-if [[ -n "$JS_TS_FILES" ]] && echo "$JS_TS_FILES" | xargs grep -lE 'passport\.|verifyToken|authMiddleware|requireAuth|jwt\.verify' 2>/dev/null | grep -q .; then AUTH_HIT=1; fi
+if any_file_matches 'Depends\(|Security\(|HTTPBearer|OAuth2|require_auth|jwt_required' "$PY_FILES"; then AUTH_HIT=1; fi
+if any_file_matches 'passport\.|verifyToken|authMiddleware|requireAuth|jwt\.verify' "$JS_TS_FILES"; then AUTH_HIT=1; fi
 if [[ $AUTH_HIT -eq 1 ]]; then
   result 'F-01' 'PASS' 'Critical' 'API routes declare an auth/security dependency'
 elif [[ -n "$PY_FILES$JS_TS_FILES" ]]; then
@@ -86,8 +99,18 @@ else
 fi
 
 # --- G-01  SQL parameterization spot check (Critical) ---
-if [[ -n "$PY_FILES" ]] && echo "$PY_FILES" | xargs grep -lE 'f"[^"]*\{[^}]+\}[^"]*"|f'"'"'[^'"'"']*\{[^}]+\}[^'"'"']*'"'"'' 2>/dev/null \
-    | xargs grep -lE 'execute|cursor|SELECT|INSERT|UPDATE|DELETE|FROM|WHERE' 2>/dev/null | grep -q .; then
+FSTRING_PATTERN='f"[^"]*\{[^}]+\}[^"]*"|f'"'"'[^'"'"']*\{[^}]+\}[^'"'"']*'"'"''
+SQL_KEYWORDS='execute|cursor|SELECT|INSERT|UPDATE|DELETE|FROM|WHERE'
+SQL_HIT=0
+if [[ -n "$PY_FILES" ]]; then
+  while IFS= read -r f; do
+    [[ -z "$f" ]] && continue
+    if grep -qE "$FSTRING_PATTERN" -- "$f" 2>/dev/null && grep -qE "$SQL_KEYWORDS" -- "$f" 2>/dev/null; then
+      SQL_HIT=1; break
+    fi
+  done <<< "$PY_FILES"
+fi
+if [[ $SQL_HIT -eq 1 ]]; then
   result 'G-01' 'FAIL' 'Critical' 'Possible user input interpolated into SQL (f-string) — review query construction'
 else
   result 'G-01' 'PASS' 'Critical' 'No obvious f-string-interpolated SQL found'
@@ -96,7 +119,7 @@ fi
 # --- G-02  No XSS sinks in frontend (High) ---
 if [[ -z "$JS_TS_FILES" ]]; then
   result 'G-02' 'WARN' 'High' 'No frontend source found — skipped'
-elif echo "$JS_TS_FILES" | xargs grep -lE 'dangerouslySetInnerHTML|\.innerHTML\s*=|eval\(' 2>/dev/null | grep -q .; then
+elif any_file_matches 'dangerouslySetInnerHTML|\.innerHTML\s*=|eval\(' "$JS_TS_FILES"; then
   result 'G-02' 'FAIL' 'High' 'XSS sink found (dangerouslySetInnerHTML / innerHTML / eval)'
 else
   result 'G-02' 'PASS' 'High' 'No XSS sinks found in frontend source'
@@ -118,16 +141,25 @@ else
 fi
 
 # --- F-07  Python deps pinned (Low) ---
+# PASS requires every real dependency line to be exactly pinned (==) or the
+# file to carry hashes. Absence of ">="/"~=" is NOT sufficient on its own —
+# a bare "requests" line (no operator at all) is the least-pinned case and
+# must not silently pass.
 REQ_FILES="$(find_files 'requirements*.txt')"
 if [[ -z "$REQ_FILES" ]]; then
   result 'F-07' 'WARN' 'Low' 'No requirements*.txt found — skipped'
 else
   while IFS= read -r rf; do
     rel="${rf#$REPO_PATH/}"
-    if grep -q -- '--hash=' "$rf" 2>/dev/null || ! grep -qE '>=|~=' "$rf" 2>/dev/null; then
-      result 'F-07' 'PASS' 'Low' "$rel is pinned"
+    if grep -q -- '--hash=' "$rf" 2>/dev/null; then
+      result 'F-07' 'PASS' 'Low' "$rel is pinned (hashed lock file)"
     else
-      result 'F-07' 'WARN' 'Low' "$rel uses unpinned ranges (>=, ~=) — no hashed lock file"
+      unpinned="$(grep -vE '^\s*(#|-r |-e |--)' "$rf" 2>/dev/null | grep -vE '^\s*$' | grep -vE '==' || true)"
+      if [[ -z "$unpinned" ]]; then
+        result 'F-07' 'PASS' 'Low' "$rel is pinned (==)"
+      else
+        result 'F-07' 'WARN' 'Low' "$rel has unpinned dependencies: $(echo "$unpinned" | tr '\n' ';' | sed 's/;$//')"
+      fi
     fi
   done <<< "$REQ_FILES"
 fi
@@ -145,13 +177,29 @@ else
       continue
     fi
     audit_json="$(cd "$dir" && npm audit --json 2>/dev/null)"
-    high=$(echo "$audit_json" | grep -o '"high":[0-9]*' | head -1 | grep -o '[0-9]*$')
-    crit=$(echo "$audit_json" | grep -o '"critical":[0-9]*' | head -1 | grep -o '[0-9]*$')
-    high=${high:-0}; crit=${crit:-0}
+    if command -v python3 >/dev/null 2>&1; then
+      # Proper JSON parse (matches the .ps1 script's ConvertFrom-Json path)
+      # instead of grepping for a "key":N substring, which is fragile.
+      read -r crit high mod low <<<"$(echo "$audit_json" | python3 -c '
+import json, sys
+try:
+    v = json.load(sys.stdin).get("metadata", {}).get("vulnerabilities", {})
+    print(v.get("critical", 0), v.get("high", 0), v.get("moderate", 0), v.get("low", 0))
+except Exception:
+    print(0, 0, 0, 0)
+' 2>/dev/null)"
+    else
+      high=$(echo "$audit_json" | grep -o '"high":[0-9]*' | head -1 | grep -o '[0-9]*$'); high=${high:-0}
+      crit=$(echo "$audit_json" | grep -o '"critical":[0-9]*' | head -1 | grep -o '[0-9]*$'); crit=${crit:-0}
+      mod=0; low=0
+    fi
+    crit=${crit:-0}; high=${high:-0}; mod=${mod:-0}; low=${low:-0}
     if [[ $((high+crit)) -gt 0 ]]; then
       result 'G-05' 'FAIL' 'High' "$rel npm audit: $crit critical, $high high"
+    elif [[ $((mod+low)) -gt 0 ]]; then
+      result 'G-05' 'WARN' 'High' "$rel npm audit: $mod moderate, $low low"
     else
-      result 'G-05' 'PASS' 'High' "$rel npm audit: 0 high/critical vulnerabilities"
+      result 'G-05' 'PASS' 'High' "$rel npm audit: 0 vulnerabilities"
     fi
   done <<< "$PKG_JSONS"
 fi
@@ -174,7 +222,7 @@ fi
 
 # --- F-02  Hardcoded http:// in frontend API client (Low, informational) ---
 API_CLIENTS="$(echo "$JS_TS_FILES" | grep -E 'api\.(ts|js|tsx|jsx)$' || true)"
-if [[ -n "$API_CLIENTS" ]] && echo "$API_CLIENTS" | xargs grep -l 'http://' 2>/dev/null | grep -q .; then
+if any_file_matches 'http://' "$API_CLIENTS"; then
   result 'F-02' 'WARN' 'Low' 'Frontend API client contains http:// — confirm production uses HTTPS/same-origin'
 else
   result 'F-02' 'PASS' 'Low' 'No hardcoded http:// found in frontend API client(s)'

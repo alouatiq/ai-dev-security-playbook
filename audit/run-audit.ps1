@@ -125,16 +125,27 @@ else {
 }
 
 # --- F-07  Python deps pinned (Low) ---
+# PASS requires every real dependency line to be exactly pinned (==) or the
+# file to carry hashes. Absence of ">="/"~=" is NOT sufficient on its own -
+# a bare "requests" line (no operator at all) is the least-pinned case and
+# must not silently pass.
 $reqFiles = Get-ChildItem -Path $RepoPath -Recurse -File -Filter 'requirements*.txt' -ErrorAction SilentlyContinue |
     Where-Object { $_.FullName -notmatch $ExcludeRegex }
 if (-not $reqFiles) { Add-Result -Id 'F-07' -Status 'WARN' -Severity 'Low' -Msg 'No requirements*.txt found - skipped' }
 else {
     foreach ($rf in $reqFiles) {
         $relRf = $rf.FullName.Substring($RepoPath.Length).TrimStart('\','/')
-        $unpinned = Select-String -Path $rf.FullName -Pattern '>=|~=' -ErrorAction SilentlyContinue
         $hasHash = Select-String -Path $rf.FullName -Pattern '--hash=' -Quiet -ErrorAction SilentlyContinue
-        if ($hasHash -or -not $unpinned) { Add-Result -Id 'F-07' -Status 'PASS' -Severity 'Low' -Msg "$relRf is pinned" }
-        else { Add-Result -Id 'F-07' -Status 'WARN' -Severity 'Low' -Msg "$relRf uses unpinned ranges (>=, ~=) - no hashed lock file" }
+        if ($hasHash) {
+            Add-Result -Id 'F-07' -Status 'PASS' -Severity 'Low' -Msg "$relRf is pinned (hashed lock file)"
+        } else {
+            $lines = Get-Content -Path $rf.FullName -ErrorAction SilentlyContinue
+            $unpinnedLines = $lines | Where-Object {
+                $_.Trim() -ne '' -and $_ -notmatch '^\s*(#|-r |-e |--)' -and $_ -notmatch '=='
+            }
+            if (-not $unpinnedLines) { Add-Result -Id 'F-07' -Status 'PASS' -Severity 'Low' -Msg "$relRf is pinned (==)" }
+            else { Add-Result -Id 'F-07' -Status 'WARN' -Severity 'Low' -Msg "$relRf has unpinned dependencies: $($unpinnedLines -join '; ')" }
+        }
     }
 }
 
