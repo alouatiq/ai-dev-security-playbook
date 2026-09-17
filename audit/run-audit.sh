@@ -98,6 +98,30 @@ else
   result 'G-03' 'WARN' 'Critical' 'Not a git repository — skipped'
 fi
 
+# --- G-04  No secret-like filenames ever committed to git history (Critical) ---
+# G-03 only looks at `git ls-files` — the CURRENT working tree. A key can be
+# gitignored today and still sit in an old commit that was never purged
+# (found in production use: a Firebase service-account key removed from
+# tracking months ago, but still retrievable from history and still the
+# actual key in production — G-03 would report PASS the whole time). Skips
+# on a shallow clone rather than reporting a false PASS.
+if git -C "$REPO_PATH" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+  if [[ "$(git -C "$REPO_PATH" rev-parse --is-shallow-repository 2>/dev/null)" == "true" ]]; then
+    result 'G-04' 'WARN' 'Critical' 'Shallow clone — cannot check git history. Re-run with full history (fetch-depth: 0 in CI) for a real result.'
+  else
+    HIST_SECRETS="$(git -C "$REPO_PATH" log --all --diff-filter=A --name-only --pretty=format: 2>/dev/null \
+      | grep -iE 'firebase.*adminsdk|serviceaccountkey|\.pem$|\.p12$|\.pfx$|\.jks$|\.keystore$|^.*id_rsa$|^.*id_ed25519$|(^|/)\.env$|\.env\.(local|prod|production)$' \
+      | sort -u | tr '\n' ' ')"
+    if [[ -n "$HIST_SECRETS" ]]; then
+      result 'G-04' 'FAIL' 'Critical' "Secret-like filenames ever committed to git history (even if removed since): $HIST_SECRETS — rotate the credential(s) and consider a history purge (git filter-repo / BFG)"
+    else
+      result 'G-04' 'PASS' 'Critical' 'No secret-like filenames found anywhere in git history'
+    fi
+  fi
+else
+  result 'G-04' 'WARN' 'Critical' 'Not a git repository — skipped'
+fi
+
 # --- G-01  SQL parameterization spot check (Critical) ---
 FSTRING_PATTERN='f"[^"]*\{[^}]+\}[^"]*"|f'"'"'[^'"'"']*\{[^}]+\}[^'"'"']*'"'"''
 SQL_KEYWORDS='execute|cursor|SELECT|INSERT|UPDATE|DELETE|FROM|WHERE'

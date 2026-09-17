@@ -161,6 +161,13 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Full history, not the default shallow depth-1 clone — gitleaks-action
+          # below scans commit history, and a shallow clone silently limits it
+          # to the single commit being tested (looks clean, isn't actually
+          # checking anything). Same gap the audit script's history check
+          # below needs full depth for too.
+          fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}

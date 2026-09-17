@@ -92,6 +92,28 @@ if (-not $isGitRepo) { Add-Result -Id 'G-03' -Status 'WARN' -Severity 'Critical'
 elseif ($tracked) { Add-Result -Id 'G-03' -Status 'FAIL' -Severity 'Critical' -Msg ("Secret-like files tracked by git: " + ($tracked -join ', ')) }
 else { Add-Result -Id 'G-03' -Status 'PASS' -Severity 'Critical' -Msg 'No .env / key / token-cache files tracked by git' }
 
+# --- G-04  No secret-like filenames ever committed to git history (Critical) ---
+# G-03 only looks at `git ls-files` - the CURRENT working tree. A key can be
+# gitignored today and still sit in an old commit that was never purged.
+# Skips on a shallow clone rather than reporting a false PASS.
+Push-Location $RepoPath
+$isShallow = $false
+$histSecrets = @()
+if ($isGitRepo) {
+    $isShallow = ((git rev-parse --is-shallow-repository 2>$null) -eq 'true')
+    if (-not $isShallow) {
+        $histSecrets = git log --all --diff-filter=A --name-only --pretty=format: 2>$null | Where-Object {
+            $_ -match '(?i)firebase.*adminsdk|serviceaccountkey|\.pem$|\.p12$|\.pfx$|\.jks$|\.keystore$|id_rsa$|id_ed25519$' -or
+            $_ -match '(^|/)\.env$' -or $_ -match '\.env\.(local|prod|production)$'
+        } | Sort-Object -Unique
+    }
+}
+Pop-Location
+if (-not $isGitRepo) { Add-Result -Id 'G-04' -Status 'WARN' -Severity 'Critical' -Msg 'Not a git repository - skipped' }
+elseif ($isShallow) { Add-Result -Id 'G-04' -Status 'WARN' -Severity 'Critical' -Msg 'Shallow clone - cannot check git history. Re-run with full history (fetch-depth: 0 in CI) for a real result.' }
+elseif (@($histSecrets).Count -gt 0) { Add-Result -Id 'G-04' -Status 'FAIL' -Severity 'Critical' -Msg ("Secret-like filenames ever committed to git history (even if removed since): " + ($histSecrets -join ', ') + " - rotate the credential(s) and consider a history purge (git filter-repo / BFG)") }
+else { Add-Result -Id 'G-04' -Status 'PASS' -Severity 'Critical' -Msg 'No secret-like filenames found anywhere in git history' }
+
 # --- G-01  SQL parameterization spot check (Critical) ---
 $banned = 'f"[^"]*\{[^}]+\}[^"]*"'
 $sqlHits = $null
@@ -259,6 +281,7 @@ $ControlInfo = @{
     'G-01'  = @{ Standard = 'OWASP A03:2021 (Injection)';                       Remediation = 'Use parameterized queries; never f-string user input into SQL.' }
     'G-02'  = @{ Standard = 'OWASP A03:2021 (Injection / XSS)';                 Remediation = 'Remove dangerouslySetInnerHTML/innerHTML/eval or sanitize input first.' }
     'G-03'  = @{ Standard = 'OWASP A02:2021 (Cryptographic Failures), CWE-798';  Remediation = 'Remove secret from git history; rotate the credential; use a secret manager.' }
+    'G-04'  = @{ Standard = 'OWASP A02:2021 (Cryptographic Failures), CWE-798';  Remediation = 'Rotate the credential immediately; purge from git history (git filter-repo / BFG); add the filename pattern to .gitignore.' }
     'G-05'  = @{ Standard = 'OWASP A06:2021 (Vulnerable Components)';           Remediation = 'Patch or replace npm packages with known CVEs (npm audit).' }
 }
 

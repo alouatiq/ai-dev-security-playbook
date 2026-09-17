@@ -114,6 +114,12 @@ jobs:
     needs: [markdown-lint, yaml-lint, json-lint, shellcheck, psscriptanalyzer]
     steps:
       - uses: actions/checkout@v7
+        with:
+          # Full history, not the default shallow depth-1 clone — G-04 in
+          # run-audit.sh scans `git log --all` for secret-like filenames ever
+          # committed. A shallow clone would make it silently WARN/skip
+          # instead of actually checking anything.
+          fetch-depth: 0
       - name: Run audit/run-audit.sh against this repo
         run: |
           chmod +x audit/run-audit.sh
