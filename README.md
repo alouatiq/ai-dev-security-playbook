@@ -99,10 +99,8 @@ behavior, start with [`docs/INTEGRATION_GUIDE.md`](docs/INTEGRATION_GUIDE.md).
    is scaffolded via `audit/scaffold-bia-acp.ps1` / `.sh` and then completed
    by hand (it needs a human business judgment call, not just a scan).
 
-This mirrors the process already used in production for the SE_DI_PIP
-project (`security/README.md` + `security/run-audit.ps1`), generalized so it
-works on **any** repo shape (Python backend, Node frontend, monorepo, or
-either alone).
+This process works on **any** repo shape (Python backend, Node frontend,
+monorepo, or either alone).
 
 ---
 
@@ -133,9 +131,12 @@ Legend: **[A]** = automated by `run-audit` · **[M]** = manual, deployment-depen
 
 ### D. Secrets & identity
 
+- Follow the developer and AI-agent rules in
+  [`docs/SECRET_HANDLING_GUIDE.md`](docs/SECRET_HANDLING_GUIDE.md).
 - **[A]** No `.env`, key, certificate, or token-cache files tracked by git.
 - **[A]** No secret-like filename ever committed to git *history*, even if removed from tracking since — a working-tree-only check (the item above) cannot see this by construction. See §5 for why this matters.
-- **[A]** A pre-commit secret-scan hook (`.githooks/pre-commit`) is present in the repo, so a secret is caught before it's ever committed, not after.
+- **[A]** The pre-commit secret-scan hook (`.githooks/pre-commit`) is present and enabled through `core.hooksPath`.
+- **[A]** When installed, gitleaks scans secret patterns in repository content and Git history.
 - **[M]** Any token cache / credential file on disk is OS-permission-protected (e.g. `0600`).
 - **[M]** OAuth/OIDC app registration is dedicated to this app, not a shared/public client ID.
 - **[M]** DB/service connection info is environment-driven, not hardcoded.
@@ -180,12 +181,15 @@ Severity mapping used by the script:
 | --- | --- | --- |
 | G-01 | SQL injection risk (unparameterized query) | 🔴 Critical |
 | G-03 | Secret/key file tracked by git | 🔴 Critical |
+| G-04 | Secret-like filename found in Git history | 🔴 Critical |
+| G-07 | gitleaks detects credential content or history | 🔴 Critical |
 | F-01 | No auth dependency on API routes | 🔴 Critical |
 | G-02 | XSS sink in frontend | 🟠 High |
 | G-05 | npm audit High/Critical CVE | 🟠 High |
 | F-07b | pip-audit finds a known CVE | 🟠 High |
 | F-03 | CORS wildcard | 🟡 Medium |
 | F-09 | Dockerfile missing non-root `USER` | 🟡 Medium |
+| G-06 | Pre-commit secret hook missing or not enabled | 🟡 Medium |
 | F-07 | Dependencies unpinned (no lockfile/hashes) | 🟢 Low |
 | F-02 | Hardcoded `http://` in frontend client | 🟢 Low (informational) |
 
@@ -237,8 +241,7 @@ Both templates:
   (`github/` or `gitlab/`) immediately, not as an afterthought — it should
   exist before the first feature PR.
 - Keep this playbook **generic**: project-specific findings belong in that
-  project's own `security/` folder (see SE_DI_PIP's `security/README.md` for
-  a worked example), not in this shared copy.
+  project's own documentation, not in this shared copy.
 - **Install the pre-commit hook in every project you scaffold or work in**
   (`git config core.hooksPath .githooks` — the hook itself is at
   [`.githooks/pre-commit`](.githooks/pre-commit)). This is the barrier that
@@ -249,3 +252,7 @@ Both templates:
   history for months because nothing blocked the commit itself, and the
   audit only ever checked the current tree. Don't repeat that — set up the
   hook before writing the first line of code that touches credentials.
+
+---
+
+**Maintainer:** [Dr. AL OUATIQ H.](https://www.alouatiq.com)

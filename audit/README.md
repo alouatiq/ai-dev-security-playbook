@@ -32,6 +32,8 @@ directory. The script:
    (`*.ts`/`*.tsx`/`*.js`, `package.json`), and `Dockerfile*` anywhere in the
    repo (skipping `node_modules`, `.git`, `dist`, `build`, `venv`, etc.).
 2. Runs each control, printing `[PASS]` / `[WARN]` / `[FAIL]` with an ID.
+   When gitleaks is installed, `G-07` scans repository content and full Git
+   history for credential patterns; otherwise the audit reports a warning.
 3. Prints an overall verdict: `LOW RISK`, `ACCEPTED RISK`, or `CRITICAL`.
 4. Writes **two** files to `<RepoPath>/audit/reports/`:
    - `audit-report-<timestamp>.md` — flat PASS/WARN/FAIL table.
@@ -51,6 +53,9 @@ ownership, or endorsement of the project being audited.
 
 See `../README.md` §2–3 for the full checklist and how the verdict is
 computed (severity mapping per control ID).
+
+For prevention and response guidance, including rules for AI prompts and logs,
+see [`../docs/SECRET_HANDLING_GUIDE.md`](../docs/SECRET_HANDLING_GUIDE.md).
 
 ## How to scaffold a BIA/ACP addendum
 

@@ -122,14 +122,31 @@ else
   result 'G-04' 'WARN' 'Critical' 'Not a git repository — skipped'
 fi
 
-# --- G-06  Pre-commit secret-scan hook available (Medium) ---
-# Whether an individual dev has run `git config core.hooksPath .githooks` is
-# per-clone and can't be seen here, but the barrier being absent from the
-# repo entirely is the failure mode that matters — see README.md §5.
-if [[ -f "$REPO_PATH/.githooks/pre-commit" ]]; then
-  result 'G-06' 'PASS' 'Medium' 'Pre-commit secret-scan hook found at .githooks/pre-commit'
-else
+# --- G-06  Pre-commit secret-scan hook available and enabled (Medium) ---
+HOOKS_PATH="$(git -C "$REPO_PATH" config --get core.hooksPath 2>/dev/null || true)"
+HOOK_ENABLED=0
+if [[ "$HOOKS_PATH" == '.githooks' || "$HOOKS_PATH" == './.githooks' ]]; then HOOK_ENABLED=1; fi
+if [[ ! -f "$REPO_PATH/.githooks/pre-commit" ]]; then
   result 'G-06' 'WARN' 'Medium' 'No .githooks/pre-commit found — nothing blocks a secret from being committed in the first place'
+elif [[ $HOOK_ENABLED -ne 1 ]]; then
+  result 'G-06' 'WARN' 'Medium' 'Pre-commit secret-scan hook exists but is not enabled — run: git config core.hooksPath .githooks'
+else
+  result 'G-06' 'PASS' 'Medium' 'Pre-commit secret-scan hook is present and enabled'
+fi
+
+# --- G-07  Secret content and history scan with gitleaks (Critical) ---
+if ! command -v gitleaks >/dev/null 2>&1; then
+  result 'G-07' 'WARN' 'Critical' 'gitleaks is not installed — secret content and history scan skipped'
+else
+  gitleaks detect --source "$REPO_PATH" --redact --no-banner >/dev/null 2>&1
+  GITLEAKS_EXIT=$?
+  if [[ $GITLEAKS_EXIT -eq 0 ]]; then
+    result 'G-07' 'PASS' 'Critical' 'gitleaks found no secrets in repository content or history'
+  elif [[ $GITLEAKS_EXIT -eq 1 ]]; then
+    result 'G-07' 'FAIL' 'Critical' 'gitleaks found a likely secret — remove it, rotate it, and purge it from history'
+  else
+    result 'G-07' 'WARN' 'Critical' "gitleaks scan could not complete (exit code $GITLEAKS_EXIT)"
+  fi
 fi
 
 # --- G-01  SQL parameterization spot check (Critical) ---
@@ -313,7 +330,10 @@ declare -A STD_MAP=(
   ["G-01"]="OWASP A03:2021 (Injection)|Use parameterized queries; never f-string user input into SQL."
   ["G-02"]="OWASP A03:2021 (Injection / XSS)|Remove dangerouslySetInnerHTML/innerHTML/eval or sanitize input first."
   ["G-03"]="OWASP A02:2021 (Cryptographic Failures), CWE-798|Remove secret from git history; rotate the credential; use a secret manager."
+  ["G-04"]="OWASP A02:2021 (Cryptographic Failures), CWE-798|Rotate the credential immediately; purge it from Git history; add the filename pattern to .gitignore."
   ["G-05"]="OWASP A06:2021 (Vulnerable Components)|Patch or replace npm packages with known CVEs (npm audit)."
+  ["G-06"]="OWASP A02:2021 (Cryptographic Failures), CWE-798|Add .githooks/pre-commit (gitleaks-based) and run: git config core.hooksPath .githooks"
+  ["G-07"]="OWASP A02:2021 (Cryptographic Failures), CWE-798|Remove and rotate the exposed credential; purge it from Git history; use a secret manager or environment variable."
 )
 
 CRIT_COUNT=0; HIGH_COUNT=0; MED_COUNT=0

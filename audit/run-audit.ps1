@@ -114,14 +114,33 @@ elseif ($isShallow) { Add-Result -Id 'G-04' -Status 'WARN' -Severity 'Critical' 
 elseif (@($histSecrets).Count -gt 0) { Add-Result -Id 'G-04' -Status 'FAIL' -Severity 'Critical' -Msg ("Secret-like filenames ever committed to git history (even if removed since): " + ($histSecrets -join ', ') + " - rotate the credential(s) and consider a history purge (git filter-repo / BFG)") }
 else { Add-Result -Id 'G-04' -Status 'PASS' -Severity 'Critical' -Msg 'No secret-like filenames found anywhere in git history' }
 
-# --- G-06  Pre-commit secret-scan hook available (Medium) ---
-# Whether an individual dev has run `git config core.hooksPath .githooks` is
-# per-clone and can't be seen here, but the barrier being absent from the
-# repo entirely is the failure mode that matters - see README.md SS5.
-if (Test-Path (Join-Path $RepoPath ".githooks/pre-commit")) {
-    Add-Result -Id 'G-06' -Status 'PASS' -Severity 'Medium' -Msg 'Pre-commit secret-scan hook found at .githooks/pre-commit'
-} else {
+# --- G-06  Pre-commit secret-scan hook available and enabled (Medium) ---
+$hookPath = Join-Path $RepoPath '.githooks/pre-commit'
+$configuredHooksPath = git -C $RepoPath config --get core.hooksPath 2>$null
+$normalizedHooksPath = ($configuredHooksPath -replace '\\', '/') -replace '/+$', ''
+$hookEnabled = $normalizedHooksPath -in @('.githooks', './.githooks')
+if (-not (Test-Path $hookPath)) {
     Add-Result -Id 'G-06' -Status 'WARN' -Severity 'Medium' -Msg 'No .githooks/pre-commit found - nothing blocks a secret from being committed in the first place'
+} elseif (-not $hookEnabled) {
+    Add-Result -Id 'G-06' -Status 'WARN' -Severity 'Medium' -Msg 'Pre-commit secret-scan hook exists but is not enabled - run: git config core.hooksPath .githooks'
+} else {
+    Add-Result -Id 'G-06' -Status 'PASS' -Severity 'Medium' -Msg 'Pre-commit secret-scan hook is present and enabled'
+}
+
+# --- G-07  Secret content and history scan with gitleaks (Critical) ---
+$gitleaks = Get-Command gitleaks -ErrorAction SilentlyContinue
+if (-not $gitleaks) {
+    Add-Result -Id 'G-07' -Status 'WARN' -Severity 'Critical' -Msg 'gitleaks is not installed - secret content and history scan skipped'
+} else {
+    & $gitleaks.Source detect --source $RepoPath --redact --no-banner *> $null
+    $gitleaksExit = $LASTEXITCODE
+    if ($gitleaksExit -eq 0) {
+        Add-Result -Id 'G-07' -Status 'PASS' -Severity 'Critical' -Msg 'gitleaks found no secrets in repository content or history'
+    } elseif ($gitleaksExit -eq 1) {
+        Add-Result -Id 'G-07' -Status 'FAIL' -Severity 'Critical' -Msg 'gitleaks found a likely secret - remove it, rotate it, and purge it from history'
+    } else {
+        Add-Result -Id 'G-07' -Status 'WARN' -Severity 'Critical' -Msg ("gitleaks scan could not complete (exit code $gitleaksExit)")
+    }
 }
 
 # --- G-01  SQL parameterization spot check (Critical) ---
@@ -294,6 +313,7 @@ $ControlInfo = @{
     'G-04'  = @{ Standard = 'OWASP A02:2021 (Cryptographic Failures), CWE-798';  Remediation = 'Rotate the credential immediately; purge from git history (git filter-repo / BFG); add the filename pattern to .gitignore.' }
     'G-05'  = @{ Standard = 'OWASP A06:2021 (Vulnerable Components)';           Remediation = 'Patch or replace npm packages with known CVEs (npm audit).' }
     'G-06'  = @{ Standard = 'OWASP A02:2021 (Cryptographic Failures), CWE-798';  Remediation = 'Add .githooks/pre-commit (gitleaks-based) and run: git config core.hooksPath .githooks' }
+    'G-07'  = @{ Standard = 'OWASP A02:2021 (Cryptographic Failures), CWE-798';  Remediation = 'Remove and rotate the exposed credential; purge it from Git history; use a secret manager or environment variable.' }
 }
 
 $critCount = @($script:Results | Where-Object { $_.Severity -eq 'Critical' -and $_.Status -eq 'FAIL' }).Count

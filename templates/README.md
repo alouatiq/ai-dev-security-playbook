@@ -22,9 +22,8 @@ Copy-Item CYB_REPORT_TEMPLATE.md C:\path\to\repo\security\CYB_report_2026-09-16.
 powershell -ExecutionPolicy Bypass -File ..\audit\scaffold-bia-acp.ps1 -RepoPath C:\path\to\repo -AppName "My App"
 ```
 
-Both templates mirror the real structure used in the SE_DI_PIP project's
-`security/` folder (`CYB_report_*.md`, `BIA_ACP_addendum_*.md`) — see those
-files for a fully worked, filled-in example of each.
+The templates use portable report names (`CYB_report_*.md` and
+`BIA_ACP_addendum_*.md`) that can be adopted by any project.
 
 Both templates retain a tooling-attribution block for the
 [AI & Developer Security + Deployment Playbook](https://github.com/alouatiq/ai-dev-security-playbook)

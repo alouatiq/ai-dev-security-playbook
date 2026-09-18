@@ -18,19 +18,26 @@ its template relative to those directories.
 git clone https://github.com/alouatiq/ai-dev-security-playbook.git $env:TEMP\ai-dev-security-playbook
 Copy-Item $env:TEMP\ai-dev-security-playbook\audit .\audit -Recurse
 Copy-Item $env:TEMP\ai-dev-security-playbook\templates .\templates -Recurse
+Copy-Item $env:TEMP\ai-dev-security-playbook\.githooks .\.githooks -Recurse
 Remove-Item $env:TEMP\ai-dev-security-playbook -Recurse -Force
+git config core.hooksPath .githooks
 ```
 
 ```bash
 git clone https://github.com/alouatiq/ai-dev-security-playbook.git /tmp/ai-dev-security-playbook
 cp -R /tmp/ai-dev-security-playbook/audit ./audit
 cp -R /tmp/ai-dev-security-playbook/templates ./templates
+cp -R /tmp/ai-dev-security-playbook/.githooks ./.githooks
 rm -rf /tmp/ai-dev-security-playbook
+git config core.hooksPath .githooks
 ```
 
 Commit the copied files in the consuming repository so CI can run the same
 version reviewed by the team. Generated files under `audit/reports/` should
 normally be ignored unless the project's governance process requires them in Git.
+Install gitleaks on developer machines so the hook performs its full staged
+content scan. See [`SECRET_HANDLING_GUIDE.md`](SECRET_HANDLING_GUIDE.md) for
+developer and AI-agent rules, safe storage patterns, and incident response.
 
 ## 2. Run it
 
