@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.0](https://github.com/alouatiq/ai-dev-security-playbook/compare/v0.4.0...v0.5.0) (2026-10-30)
+
+
+### Features
+
+* add one-page browser scanner and pinned deep scan ([ae342b9](https://github.com/alouatiq/ai-dev-security-playbook/commit/ae342b9b5677b3d2588411f045a6586f42436efc))
+
 ## [0.4.0](https://github.com/alouatiq/ai-dev-security-playbook/compare/v0.3.0...v0.4.0) (2026-09-18)
 
 
