@@ -20,7 +20,7 @@
 project remains the work and responsibility of its own contributors.
 
 This is a **point-in-time** report. The reusable, re-runnable version of these
-checks lives in [`../README.md`](../README.md) (the checklist) and
+checks lives in [`../docs/PLAYBOOK.md`](../docs/PLAYBOOK.md) (the checklist) and
 [`../audit/run-audit.ps1`](../audit/run-audit.ps1) / [`../audit/run-audit.sh`](../audit/run-audit.sh)
 (the automated scanner). Re-run those after every significant change.
 

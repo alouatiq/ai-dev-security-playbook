@@ -8,7 +8,7 @@ repositories' application code, not this one.
 
 This document is the manual review this playbook itself calls for in
 `docs/RELEASE_GUIDE.md` §3 ("CI is green... audit verdict is LOW/ACCEPTED RISK")
-and `README.md` §5 ("run the audit, act on the verdict") — applied to the
+and `docs/PLAYBOOK.md` §5 ("run the audit, act on the verdict") — applied to the
 playbook's own repo before treating it as production-ready to hand to other
 projects.
 

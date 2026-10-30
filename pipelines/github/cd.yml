@@ -25,13 +25,13 @@ jobs:
       contents: read
       packages: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - name: Build image
         run: docker build -t local/backend:ci -f ${{ env.BACKEND_DIR }}/Dockerfile ${{ env.BACKEND_DIR }}
 
       - name: Trivy scan (gate before push)
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0 (never a tag or branch: see CVE-2026-33634)
         with:
           image-ref: local/backend:ci
           severity: ${{ env.TRIVY_SEVERITY }}
@@ -40,7 +40,7 @@ jobs:
 
       - name: Log in to registry
         if: success()
-        uses: docker/login-action@v3
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
@@ -60,13 +60,13 @@ jobs:
       contents: read
       packages: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - name: Build image
         run: docker build -t local/frontend:ci -f ${{ env.FRONTEND_DIR }}/Dockerfile ${{ env.FRONTEND_DIR }}
 
       - name: Trivy scan (gate before push)
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0 (never a tag or branch: see CVE-2026-33634)
         with:
           image-ref: local/frontend:ci
           severity: ${{ env.TRIVY_SEVERITY }}
@@ -75,7 +75,7 @@ jobs:
 
       - name: Log in to registry
         if: success()
-        uses: docker/login-action@v3
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
