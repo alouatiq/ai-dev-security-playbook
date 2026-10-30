@@ -7,7 +7,7 @@ and a note in `CHANGELOG.md` (generated automatically — see below).
 
 ## Before you change anything
 
-1. Read `README.md` (the checklist and verdict tiers), and whichever of
+1. Read `docs/PLAYBOOK.md` (the checklist and verdict tiers), and whichever of
    `audit/README.md`, `pipelines/README.md`, `templates/README.md`,
    `docs/RELEASE_GUIDE.md`, `docs/TECH_STACK.md` covers the area you're touching.
 2. If you're changing a check in `audit/run-audit.sh`, make the **same**

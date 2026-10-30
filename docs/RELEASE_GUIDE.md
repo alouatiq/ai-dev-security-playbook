@@ -99,7 +99,7 @@ Before merging the release PR (GitHub) or letting the `release` job run
 (GitLab), confirm:
 
 - [ ] `audit/run-audit.ps1` (or `.sh`) verdict is **LOW RISK** or **ACCEPTED
-      RISK** — never release on a **CRITICAL** verdict (see `../README.md` §3).
+      RISK** — never release on a **CRITICAL** verdict (see `PLAYBOOK.md` §3).
 - [ ] CI is green: lint, build, test, security-scan, quality-gate all passed
       on the commit being released.
 - [ ] The CD/deploy stage's Trivy image scan passed (no unpushed image should

@@ -1,0 +1,36 @@
+# Pinned scanner releases. deep-scan.ps1 / deep-scan.sh refuse any download
+# whose SHA-256 differs from this file. Tags can be moved; hashes cannot.
+#
+# Columns (whitespace separated):
+# tool version platform sha256 asset
+#
+# Base URL per tool lives in the scripts. To upgrade: bump the version, take
+# hashes from the release, and re-run the tests. Never trust "latest":
+# trivy v0.69.4 and the trivy-action tags were hijacked in March 2026
+# (CVE-2026-33634).
+gitleaks 8.30.1 windows-x64 d29144deff3a68aa93ced33dddf84b7fdc26070add4aa0f4513094c8332afc4e gitleaks_8.30.1_windows_x64.zip
+gitleaks 8.30.1 linux-x64 551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb gitleaks_8.30.1_linux_x64.tar.gz
+gitleaks 8.30.1 linux-arm64 e4a487ee7ccd7d3a7f7ec08657610aa3606637dab924210b3aee62570fb4b080 gitleaks_8.30.1_linux_arm64.tar.gz
+gitleaks 8.30.1 macos-x64 dfe101a4db2255fc85120ac7f3d25e4342c3c20cf749f2c20a18081af1952709 gitleaks_8.30.1_darwin_x64.tar.gz
+gitleaks 8.30.1 macos-arm64 b40ab0ae55c505963e365f271a8d3846efbc170aa17f2607f13df610a9aeb6a5 gitleaks_8.30.1_darwin_arm64.tar.gz
+osv-scanner 2.7.0 windows-x64 9964ed64ec9a387391eb4cc006ad5c531154821aef29b793e02c448de4686438 osv-scanner_windows_amd64.exe
+osv-scanner 2.7.0 linux-x64 160c6253e2922e9e0a6a9771c5c4c40a4b3c6090b34a3cdd5e80c96cc2e4218b osv-scanner_linux_amd64
+osv-scanner 2.7.0 linux-arm64 4061ef4c021ed3c47f203b818f337e351336cc5cd67c0274fc36bd1dfc728dd7 osv-scanner_linux_arm64
+osv-scanner 2.7.0 macos-x64 e82c5df7ab0a42dff29a1cd0660711447b56b4c0483ff66ad8634df10fd81a45 osv-scanner_darwin_amd64
+osv-scanner 2.7.0 macos-arm64 d4926ef8da134332543be276dff157e4c170f99ad91fc48e89448a8816bdf70b osv-scanner_darwin_arm64
+trivy 0.76.1 windows-x64 1051f49cb22d5284f43425f72aad9cda63ca12ceb92e7caa06903490c82dc9bf trivy_0.76.1_windows-64bit.zip
+trivy 0.76.1 linux-x64 c7cbe3137fb8a48a17574bede3dd6beb16742d1e9772929940fc90082c39d9c0 trivy_0.76.1_Linux-64bit.tar.gz
+trivy 0.76.1 linux-arm64 e174dff2a6dba5e3ae41f8d0537a6324405bd08132497340304c6b20e0f16a1f trivy_0.76.1_Linux-ARM64.tar.gz
+trivy 0.76.1 macos-x64 7aa762eacd582052d053b62dcf972a1ab058abe39a57ccae234ed8894945b6b7 trivy_0.76.1_macOS-64bit.tar.gz
+trivy 0.76.1 macos-arm64 11a9b6cd2752011b54f01ea4bd0dbfa9f0c41dc6538d5a3f9d23955f471bf4e5 trivy_0.76.1_macOS-ARM64.tar.gz
+zizmor 1.31.1 windows-x64 4de30371c8a3b483aecbcf0dec1fd6a2b6aae65051ca226b4f6527baac6a8c7a zizmor-x86_64-pc-windows-msvc.zip
+zizmor 1.31.1 linux-x64 d185f726bdaf92df78273217dfdd24ebcd6b0ef48cf3ce776ff5762b6e138c99 zizmor-x86_64-unknown-linux-gnu.tar.gz
+zizmor 1.31.1 linux-arm64 37eebbd5762a44f262d94875431b14a6d2402991e90a685113ea97b8b41be833 zizmor-aarch64-unknown-linux-gnu.tar.gz
+zizmor 1.31.1 macos-x64 72ae63bb85b67229c06242f04195cb43927e9fab5f43803c6434dc701a517d61 zizmor-x86_64-apple-darwin.tar.gz
+zizmor 1.31.1 macos-arm64 ad5aa633cd56215b11e6c51d51f90c7e6b22904a75047d1215abbd422f61d698 zizmor-aarch64-apple-darwin.tar.gz
+opengrep 1.33.1 windows-x64 132e606e071bdd3928286fddc893198a6106a90820d46e21197e0ace1a23e0c1 opengrep_windows_x86.exe
+opengrep 1.33.1 linux-x64 46e8133cc490f9f50518061590ce2f6be5a08afaeda034471c0ceda4b3899808 opengrep_manylinux_x86
+opengrep 1.33.1 linux-arm64 d1433f63a90b8bc0b6ad4b498a13b372b856ce9a754a43484ba4920fe2d76dcf opengrep_manylinux_aarch64
+opengrep 1.33.1 macos-x64 c3bd18e0d898d44e28419d95dad57c8928bb46ab32889a0ee1f72a87ad9627af opengrep_osx_x86
+opengrep 1.33.1 macos-arm64 a17c1881bb40e3214266a7a291cf4f2ae3bc56c1715628b5712d2ec816bc3e2d opengrep_osx_arm64
+opengrep-rules f1d2b562b414783763fd02a6ed2736eaed622efa any 9a5f1cd5c625418cc1c776120123e2d4371df9bb66e099426b17c3488e13619d f1d2b562b414783763fd02a6ed2736eaed622efa.tar.gz

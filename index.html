@@ -1,0 +1,900 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; connect-src https://api.osv.dev; base-uri 'none'; form-action 'none'">
+<title>AI Dev Security Playbook</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 2 4 5v6c0 5 3.4 9.4 8 11 4.6-1.6 8-6 8-11V5z' fill='%23641e8c'/%3E%3C/svg%3E">
+<style>
+:root{--bg:#f7f6f9;--card:#fff;--ink:#1f1a27;--muted:#645d70;--line:#e2deea;--brand:#641e8c;--brand-ink:#fff;--soft:#f1eaf6;
+--crit:#b3261e;--high:#c2510a;--med:#8a6500;--low:#2f6f4f;--ok:#1d7a4c;--skip:#6b6578;--code:#f3f1f6}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#15121a;--card:#1e1a25;--ink:#ece8f2;--muted:#a9a2b5;--line:#352f40;--brand:#b98ad6;--brand-ink:#1b1122;--soft:#2a2233;
+--crit:#ff8a80;--high:#ffab70;--med:#e6c35c;--low:#86d2a8;--ok:#6fd6a0;--skip:#a9a2b5;--code:#17141c}}
+:root[data-theme="dark"]{--bg:#15121a;--card:#1e1a25;--ink:#ece8f2;--muted:#a9a2b5;--line:#352f40;--brand:#b98ad6;--brand-ink:#1b1122;--soft:#2a2233;
+--crit:#ff8a80;--high:#ffab70;--med:#e6c35c;--low:#86d2a8;--ok:#6fd6a0;--skip:#a9a2b5;--code:#17141c}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:72px}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.bar{position:sticky;top:0;z-index:5;background:var(--card);border-bottom:1px solid var(--line)}
+.bar-in{max-width:1080px;margin:auto;padding:10px 16px;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.brand{display:flex;gap:8px;align-items:center;color:var(--brand);font-weight:700;text-decoration:none}
+.bar nav{display:flex;gap:4px;margin-left:auto;flex-wrap:wrap}
+.bar nav a{color:var(--muted);text-decoration:none;padding:4px 10px;border-radius:6px;font-size:14px}
+.bar nav a:hover{background:var(--soft);color:var(--ink)}
+.wrap{max-width:1080px;margin:auto;padding:0 16px 64px}
+.hero{padding:44px 0 22px}
+.kicker{color:var(--brand);font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+h1{font-size:clamp(30px,5vw,44px);line-height:1.12;margin:8px 0 12px;max-width:17em}
+h2{font-size:24px;margin:0 0 6px}
+h3{font-size:16px;margin:18px 0 6px}
+p{margin:0 0 10px}
+.lead{font-size:18px;color:var(--muted);max-width:38em}
+.muted{color:var(--muted)}.small{font-size:14px}
+section{margin-top:36px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;margin-top:14px}
+.btn{font:inherit;font-size:15px;padding:8px 14px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer}
+.btn:hover{border-color:var(--brand)}
+.btn.primary{background:var(--brand);border-color:var(--brand);color:var(--brand-ink);font-weight:600;padding:12px 22px;font-size:17px}
+.btn:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+.row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+label.opt{display:flex;gap:8px;align-items:flex-start;font-size:14px;color:var(--muted);margin-top:14px;max-width:44em}
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:18px}
+.step{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px}
+.step b{display:block}
+.verdict{border-left:6px solid var(--skip)}
+.verdict.CRITICAL{border-left-color:var(--crit)}.verdict.ACCEPTED{border-left-color:var(--med)}.verdict.LOW{border-left-color:var(--ok)}
+.verdict h2{font-size:26px}
+.verdict.CRITICAL h2{color:var(--crit)}.verdict.ACCEPTED h2{color:var(--med)}.verdict.LOW h2{color:var(--ok)}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;margin-top:14px}
+.tile{border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+.tile b{display:block;font-size:24px;line-height:1.2}
+.tile span{font-size:13px;color:var(--muted)}
+.table-wrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th{font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);text-align:left}
+th,td{padding:8px 10px 8px 0;border-bottom:1px solid var(--line);vertical-align:top}
+.tag{display:inline-block;font-size:12px;font-weight:700;padding:1px 7px;border-radius:999px;border:1px solid currentColor;white-space:nowrap}
+.s-Critical,.s-FAIL{color:var(--crit)}.s-High{color:var(--high)}.s-Medium,.s-WARN{color:var(--med)}.s-Low{color:var(--low)}.s-PASS,.s-ok{color:var(--ok)}.s-SKIP,.s-skipped,.s-pending{color:var(--skip)}.s-failed{color:var(--crit)}.s-running{color:var(--brand)}
+code,pre{font-family:ui-monospace,Consolas,Menlo,monospace;font-size:13px}
+code{background:var(--code);padding:1px 5px;border-radius:4px;overflow-wrap:anywhere}
+pre{background:var(--code);padding:12px;border-radius:8px;white-space:pre-wrap;word-break:break-all;margin:10px 0;border:1px solid var(--line)}
+.tabs{display:flex;gap:4px;margin:10px 0 0}
+.tabs button{font:inherit;font-size:14px;border:1px solid var(--line);background:none;color:var(--muted);padding:4px 12px;border-radius:6px;cursor:pointer}
+.tabs button[aria-pressed="true"]{background:var(--soft);color:var(--ink);border-color:var(--brand)}
+.finding{border-top:1px solid var(--line);padding:12px 0}
+.finding:first-child{border-top:0}
+.finding h4{margin:0 0 2px;font-size:15px}
+.finding .meta{font-size:13px;color:var(--muted);overflow-wrap:anywhere}
+.fix{font-size:14px;margin-top:4px}
+.filters{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+select{font:inherit;font-size:14px;padding:4px 8px;border-radius:6px;border:1px solid var(--line);background:var(--card);color:var(--ink)}
+progress{width:100%;height:8px;accent-color:var(--brand)}
+.drop{border:1px dashed var(--line);border-radius:8px;padding:12px;margin-top:12px;font-size:14px;color:var(--muted)}
+.drop.over{border-color:var(--brand);background:var(--soft)}
+.check{display:flex;gap:10px;padding:7px 0;border-bottom:1px solid var(--line);font-size:15px}
+.check input{margin-top:5px;flex:none}
+.banner{background:var(--soft);border:1px solid var(--line);border-radius:8px;padding:10px 12px;font-size:14px;margin-top:14px}
+[hidden]{display:none!important}
+footer{border-top:1px solid var(--line);padding:18px 16px;text-align:center;color:var(--muted);font-size:13px}
+footer a{color:inherit}
+@media print{.bar nav,.btn,.tabs,.filters,#scan,#deepCard,label.opt,.drop{display:none!important}body{background:#fff}.card{break-inside:avoid;border-color:#ccc}}
+</style>
+</head>
+<body>
+<header class="bar"><div class="bar-in">
+  <a class="brand" href="#top"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 4 5v6c0 5 3.4 9.4 8 11 4.6-1.6 8-6 8-11V5z" fill="currentColor"/></svg>AI Dev Security Playbook</a>
+  <nav aria-label="Sections"><a href="#scan">Scan</a><a href="#results">Results</a><a href="#checklist">Checklist</a><a href="#tools">Tools</a></nav>
+  <button class="btn" id="themeBtn" type="button" aria-label="Switch light or dark theme">◐</button>
+</div></header>
+
+<div class="wrap" id="top">
+  <div class="hero">
+    <div class="kicker">Open it. Pick a folder. Get a verdict.</div>
+    <h1>Is this project safe to deploy?</h1>
+    <p class="lead">Nothing to install and no backup needed: your project stays read-only. The scan runs on this page, and one optional command adds five full security scanners.</p>
+  </div>
+
+  <section id="scan" style="margin-top:0">
+    <div class="card">
+      <div class="row">
+        <button class="btn primary" id="pickBtn" type="button">Choose project folder</button>
+        <button class="btn" id="demoBtn" type="button">See a sample report</button>
+        <input type="file" id="dirInput" webkitdirectory multiple hidden>
+      </div>
+      <label class="opt"><input type="checkbox" id="osvOpt" checked>
+        <span>Check dependencies for known vulnerabilities. Sends package names and versions, and nothing else, to <code>api.osv.dev</code> (Google's open vulnerability database). Packages from private registries are left out.</span></label>
+      <p class="small muted" id="envLine" style="margin-top:12px"></p>
+      <div id="progressBox" hidden><progress id="prog" max="100" value="0"></progress><p class="small muted" id="progText"></p></div>
+    </div>
+    <div class="steps">
+      <div class="step"><b>1 · Quick scan</b><span class="small muted">Seconds, in this page. Secrets, risky code, Docker and CI settings, known CVEs.</span></div>
+      <div class="step"><b>2 · Deep scan (optional)</b><span class="small muted">Paste one command. Five pinned scanners run in a cache folder, with nothing installed.</span></div>
+      <div class="step"><b>3 · One verdict</b><span class="small muted">Everything merges here, with fixes and a report you can save or print.</span></div>
+    </div>
+  </section>
+
+  <section id="results" hidden>
+    <h2>Results</h2>
+    <div id="sampleBanner" class="banner" hidden>Sample report: a built-in fictional project with fake keys. Nothing on your computer was read.</div>
+    <div class="card verdict" id="verdictCard"></div>
+
+    <div class="card" id="deepCard">
+      <h2 style="font-size:20px">Deep scan</h2>
+      <p class="small muted">A web page cannot start programs on your computer, and that limit protects you. So this one step is yours: open a terminal <b>in your project folder</b> and paste the command. It needs no admin rights and installs nothing. It downloads pinned scanners to a cache folder and checks each SHA-256. Results land in <code>.devsec/</code>, which Git ignores.</p>
+      <div class="tabs" id="osTabs" role="group" aria-label="Operating system"></div>
+      <pre id="deepCmd"></pre>
+      <div class="row"><button class="btn" id="copyBtn" type="button">Copy command</button><span class="small muted" id="watchText"></span></div>
+      <div class="table-wrap" style="margin-top:10px"><table id="toolTable"></table></div>
+      <div class="drop" id="drop">Results not appearing? Drop the <code>.json</code> files from <code>.devsec/</code> here, or <label style="color:var(--brand);cursor:pointer;text-decoration:underline">browse<input type="file" id="resultsInput" multiple accept=".json" hidden></label>.</div>
+    </div>
+
+    <div class="card">
+      <h2 style="font-size:20px">Controls</h2>
+      <div class="table-wrap"><table id="controlTable"></table></div>
+    </div>
+
+    <div class="card">
+      <div class="row" style="justify-content:space-between"><h2 style="font-size:20px">Findings</h2>
+        <div class="row"><button class="btn" id="mdBtn" type="button">Save report (.md)</button><button class="btn" id="printBtn" type="button">Print / PDF</button></div></div>
+      <div class="filters"><select id="sevFilter" aria-label="Filter by severity"><option value="">All severities</option><option>Critical</option><option>High</option><option>Medium</option><option>Low</option></select>
+        <select id="srcFilter" aria-label="Filter by source"><option value="">All sources</option></select></div>
+      <div id="findings"></div>
+    </div>
+  </section>
+
+  <section id="checklist">
+    <h2>What no scanner can check</h2>
+    <p class="muted">These depend on how the app is deployed, so a person has to confirm them. Your ticks are saved in this browser only.</p>
+    <div class="card" id="manualList"></div>
+  </section>
+
+  <section id="tools">
+    <h2>Tools</h2>
+    <div class="card table-wrap"><table>
+      <thead><tr><th>Tool</th><th>Finds</th><th>Runs</th></tr></thead>
+      <tbody>
+        <tr><td>Built-in checks</td><td>Secret patterns, tracked key files, risky code, Docker and CI settings</td><td>In this page</td></tr>
+        <tr><td><a href="https://osv.dev">OSV.dev</a></td><td>Known vulnerabilities in dependencies</td><td>In this page, online</td></tr>
+        <tr><td><a href="https://github.com/gitleaks/gitleaks">gitleaks</a></td><td>Secrets in files and the whole Git history</td><td>Deep scan</td></tr>
+        <tr><td><a href="https://github.com/google/osv-scanner">osv-scanner</a></td><td>Dependency vulnerabilities across lockfiles</td><td>Deep scan</td></tr>
+        <tr><td><a href="https://github.com/aquasecurity/trivy">Trivy</a></td><td>Vulnerabilities plus Docker and IaC misconfiguration</td><td>Deep scan</td></tr>
+        <tr><td><a href="https://github.com/zizmorcore/zizmor">zizmor</a></td><td>GitHub Actions weaknesses</td><td>Deep scan</td></tr>
+        <tr><td><a href="https://github.com/opengrep/opengrep">Opengrep</a></td><td>Code flaws (SAST), using Semgrep-compatible rules</td><td>Deep scan</td></tr>
+      </tbody></table></div>
+    <p class="small muted" style="margin-top:12px">Browser support: Chrome and Edge give the full experience. In Firefox and Safari the quick scan works, but deep-scan results must be dropped onto the page.</p>
+  </section>
+</div>
+<footer>© 2026 <a href="https://www.alouatiq.com">Dr. AL OUATIQ H.</a> · <a href="https://github.com/alouatiq/ai-dev-security-playbook">ai-dev-security-playbook</a> · A verdict covers automated checks only. It is not a guarantee of security.</footer>
+
+<script id="engine">
+// Scan engine. No DOM access: tests/engine.test.mjs loads this block in Node.
+const Engine = (() => {
+  'use strict';
+  const SKIP_DIRS = new Set(['node_modules', '.git', 'dist', 'build', 'venv', '.venv', '__pycache__', 'coverage', '.next', 'out', 'vendor', 'target', '.terraform', '.devsec', '.idea', '.vscode']);
+  const MAX_FILE = 1024 * 1024;
+  const MAX_LINE = 5000;
+  const TEXT_EXT = /\.(py|js|jsx|mjs|cjs|ts|tsx|java|go|rb|php|cs|rs|kt|swift|sh|bash|ps1|ya?ml|json|toml|ini|cfg|conf|env|properties|xml|tf|md|txt|html|vue|svelte|lock|sum)$/i;
+  const CODE_EXT = /\.(py|js|jsx|mjs|cjs|ts|tsx|java|go|rb|php|cs|vue|svelte)$/i;
+
+  const CONTROLS = {
+    'F-01': ['API routes declare authentication', 'OWASP API2:2023, A01:2021', 'Require a validated auth dependency (JWT, OAuth2, API key) on every route.'],
+    'F-02': ['No hardcoded http:// in API clients', 'OWASP A02:2021', 'Serve over HTTPS and read the base URL from configuration.'],
+    'F-03': ['CORS is not a wildcard', 'OWASP A05:2021', 'Replace the wildcard with an explicit list of allowed origins.'],
+    'F-07': ['Dependencies are pinned', 'OWASP A06:2021', 'Pin exact versions (==) or commit a lockfile with hashes.'],
+    'F-09': ['Containers run as non-root', 'CIS Docker Benchmark 4.1', 'Add a non-root USER directive to the Dockerfile.'],
+    'C-01': ['GitHub Actions pinned to commit SHAs', 'SLSA, CVE-2026-33634', 'Pin every action to a full commit SHA. Tags and branches can be moved by an attacker.'],
+    'C-02': ['Base images use a fixed version', 'CIS Docker Benchmark 4.2', 'Use a specific tag, or better, an @sha256 digest.'],
+    'C-03': ['GitHub Actions configuration', 'GitHub Actions hardening', 'Review each flagged workflow; zizmor.sh explains every rule.'],
+    'G-01': ['No SQL built from strings', 'OWASP A03:2021', 'Use parameterized queries.'],
+    'G-02': ['No XSS sinks in frontend code', 'OWASP A03:2021', 'Remove the sink or sanitize input before it reaches the DOM.'],
+    'G-03': ['No key or .env files in Git', 'OWASP A02:2021, CWE-798', 'Stop tracking the file, rotate the credential, and add it to .gitignore.'],
+    'G-04': ['No secrets in Git history', 'OWASP A02:2021, CWE-798', 'Rotate the credential first, then purge it from history (git filter-repo).'],
+    'G-05': ['No known vulnerable dependencies', 'OWASP A06:2021', 'Upgrade to the fixed version, or replace the package.'],
+    'G-06': ['Pre-commit secret hook enabled', 'CWE-798', 'Add .githooks/pre-commit from this playbook, then run: git config core.hooksPath .githooks'],
+    'G-07': ['No secrets in project files', 'OWASP A02:2021, CWE-798', 'Remove the secret, rotate it, and load it from the environment or a secret manager.'],
+    'G-08': ['Disclosure policy exists', 'ISO/IEC 29147', 'Add a SECURITY.md with a contact for reporting vulnerabilities.'],
+    'G-09': ['.gitignore covers .env files', 'CWE-538', 'Add .env and .env.* to .gitignore.'],
+    'G-10': ['Static analysis (SAST) is clean', 'OWASP A03:2021, ASVS', 'Review each finding. Fix it, or record why it does not apply.'],
+    'G-11': ['Infrastructure configuration is hardened', 'CIS Benchmarks', 'Apply the remediation Trivy lists for each finding.'],
+  };
+
+  const SECRET_RULES = [
+    ['AWS access key', /\b(?:AKIA|ASIA)[0-9A-Z]{16}\b/],
+    ['GitHub token', /\bgh[pousr]_[A-Za-z0-9]{36,}\b|\bgithub_pat_[A-Za-z0-9_]{40,}\b/],
+    ['GitLab token', /\bglpat-[A-Za-z0-9_-]{20,}\b/],
+    ['Slack token', /\bxox[abprs]-[A-Za-z0-9-]{10,}\b/],
+    ['Stripe live key', /\b[sr]k_live_[A-Za-z0-9]{16,}\b/],
+    ['Google API key', /\bAIza[0-9A-Za-z_-]{35}\b/],
+    ['Anthropic API key', /\bsk-ant-[A-Za-z0-9_-]{20,}\b/],
+    ['OpenAI API key', /\bsk-(?:proj-)?[A-Za-z0-9_-]{32,}\b/],
+    ['npm token', /\bnpm_[A-Za-z0-9]{36}\b/],
+    ['SendGrid key', /\bSG\.[A-Za-z0-9_-]{22}\.[A-Za-z0-9_-]{43}\b/],
+    ['Twilio key', /\bSK[0-9a-f]{32}\b/],
+    ['Private key block', /-----BEGIN (?:RSA |EC |OPENSSH |DSA |PGP )?PRIVATE KEY(?: BLOCK)?-----/],
+    ['Connection string with password', /\b(?:postgres(?:ql)?|mysql|mongodb(?:\+srv)?|redis|amqp):\/\/[^\s:@/'"]+:[^\s@/'"$<{]{4,}@/],
+    ['Hardcoded password or secret', /\b(?:password|passwd|pwd|secret|api[_-]?key|auth[_-]?token|access[_-]?token)["']?\s*[:=]\s*["']([^"'\s$<{]{10,})["']/i],
+  ];
+  const PLACEHOLDER = /example|changeme|change_me|placeholder|your[_-]|xxxx|dummy|sample|\*\*\*|redacted|test[_-]?key|<|process\.env|os\.environ/i;
+
+  const SECRET_FILE = /(^|\/)(\.env(\.(local|prod|production|staging))?|id_rsa|id_ed25519|.*\.(pem|key|p12|pfx|jks|keystore)|.*firebase.*adminsdk.*\.json|.*serviceaccountkey.*\.json|_msal_cache.*)$/i;
+  const SECRET_FILE_OK = /(^|\/)[^/]*(public|example|sample|test)[^/]*$/i;
+
+  const CODE_RULES = [
+    { id: 'G-01', sev: 'Critical', ext: /\.py$/, title: 'SQL built with an f-string or format string',
+      re: /(?:execute(?:many)?|raw|text)\(\s*f["']|execute(?:many)?\(\s*["'][^"']*["']\s*(?:%|\+|\.format\()|f["'`]{1,3}\s*(?:SELECT|INSERT\s+INTO|UPDATE|DELETE\s+FROM)\b[^"'`]*\{/i },
+    { id: 'G-01', sev: 'Critical', ext: /\.(js|jsx|mjs|cjs|ts|tsx)$/, title: 'SQL built with a template string',
+      re: /`\s*(?:SELECT\s[^`]*FROM|INSERT\s+INTO|UPDATE\s+\w+\s+SET|DELETE\s+FROM)\b[^`]*\$\{/i },
+    { id: 'G-02', sev: 'High', ext: /\.(js|jsx|mjs|cjs|ts|tsx|vue|svelte|html)$/, title: 'Unsafe DOM sink',
+      re: /dangerouslySetInnerHTML|\.(?:inner|outer)HTML\s*=[^=]|\beval\(|document\.write\(|v-html=/ }, // devsec-ignore
+    { id: 'F-03', sev: 'Medium', ext: CODE_EXT, title: 'CORS allows every origin',
+      re: /allow_origins\s*=\s*\[\s*["']\*|allow_origin_regex\s*=\s*r?["']\.\*|Access-Control-Allow-Origin["']?\s*[,:]\s*["']\*|\borigin:\s*["']\*["']/ },
+  ];
+  const ROUTE_RE = /@\w+\.(?:get|post|put|patch|delete|route)\(|\b(?:app|router)\.(?:get|post|put|patch|delete)\(\s*["'`]\/|@(?:Get|Post|Put|Delete|Request)Mapping/;
+  const AUTH_RE = /Depends\(|Security\(|HTTPBearer|OAuth2|require_auth|jwt_required|login_required|passport\.|verifyToken|authMiddleware|requireAuth|jwt\.verify|@PreAuthorize|@UseGuards|\[Authorize/;
+
+  const finding = (id, status, severity, title, extra = {}) => ({ id, status, severity, title, source: 'Quick scan', ...extra });
+  const isComment = (line) => /^\s*(#|\/\/|\*|\/\*)/.test(line);
+
+  // ---- Git metadata, read directly from .git ----
+  function parseGitIndex(bytes) {
+    const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+    if (bytes.length < 12 || view.getUint32(0) !== 0x44495243) return null;
+    const version = view.getUint32(4);
+    if (version !== 2 && version !== 3) return null; // v4 prefix-compresses paths
+    const count = view.getUint32(8), paths = [], dec = new TextDecoder();
+    let pos = 12;
+    for (let i = 0; i < count; i++) {
+      const flags = view.getUint16(pos + 60);
+      const extended = version === 3 && (flags & 0x4000) ? 2 : 0;
+      const start = pos + 62 + extended;
+      let end = start;
+      while (bytes[end] !== 0) end++;
+      paths.push(dec.decode(bytes.subarray(start, end)));
+      pos += (62 + extended + (end - start) + 8) & ~7;
+    }
+    return paths;
+  }
+
+  // ---- Dependency extraction ----
+  function parseLock(name, text) {
+    const out = [], add = (ecosystem, pkg, version) => { if (pkg && version) out.push({ ecosystem, name: pkg, version }); };
+    const base = name.split('/').pop();
+    try {
+      if (base === 'package-lock.json') {
+        const j = JSON.parse(text);
+        for (const [key, v] of Object.entries(j.packages || {})) {
+          if (!key || !v.version || v.link) continue;
+          if (v.resolved && !/^https:\/\/registry\.(npmjs\.org|yarnpkg\.com)\//.test(v.resolved)) continue;
+          add('npm', v.name || key.split('node_modules/').pop(), v.version);
+        }
+        const walk = (deps) => { for (const [n, v] of Object.entries(deps || {})) { add('npm', n, v.version); walk(v.dependencies); } };
+        if (!j.packages) walk(j.dependencies);
+      } else if (base === 'yarn.lock') {
+        for (const m of text.matchAll(/^"?((?:@[^/\s]+\/)?[^@\s"]+)@[^\n]*:\n\s+version:? "?([^"\n]+)"?/gm)) add('npm', m[1], m[2]);
+      } else if (base === 'pnpm-lock.yaml') {
+        for (const m of text.matchAll(/^\s+['"]?\/?((?:@[^/\s]+\/)?[^@\s'"(]+)@(\d[^:'"(\s]*)[^:]*:/gm)) add('npm', m[1], m[2]);
+      } else if (/^requirements.*\.txt$/.test(base)) {
+        for (const m of text.matchAll(/^\s*([A-Za-z0-9._-]+)(?:\[[^\]]*\])?==([^\s;#\\]+)/gm)) add('PyPI', m[1], m[2]);
+      } else if (base === 'Pipfile.lock') {
+        const j = JSON.parse(text);
+        for (const group of [j.default, j.develop]) for (const [n, v] of Object.entries(group || {})) if (v.version) add('PyPI', n, v.version.replace(/^==/, ''));
+      } else if (base === 'poetry.lock' || base === 'uv.lock') {
+        for (const m of text.matchAll(/\[\[package\]\]\nname = "([^"]+)"\nversion = "([^"]+)"/g)) add('PyPI', m[1], m[2]);
+      } else if (base === 'Cargo.lock') {
+        for (const m of text.matchAll(/\[\[package\]\]\nname = "([^"]+)"\nversion = "([^"]+)"\nsource = "registry/g)) add('crates.io', m[1], m[2]);
+      } else if (base === 'go.sum') {
+        for (const m of text.matchAll(/^(\S+) v([^\s/]+)(?:\/go\.mod)? h1:/gm)) add('Go', m[1], m[2].replace('+incompatible', ''));
+      } else if (base === 'composer.lock') {
+        const j = JSON.parse(text);
+        for (const p of [...(j.packages || []), ...(j['packages-dev'] || [])]) add('Packagist', p.name, String(p.version).replace(/^v/, ''));
+      } else if (base === 'Gemfile.lock') {
+        for (const m of text.matchAll(/^ {4}([A-Za-z0-9._-]+) \(([^)\s]+)\)$/gm)) add('RubyGems', m[1], m[2]);
+      }
+    } catch { /* an unreadable lockfile is reported as skipped, not fatal */ }
+    return out;
+  }
+  const isLockfile = (p) => /(^|\/)(package-lock\.json|yarn\.lock|pnpm-lock\.yaml|requirements[^/]*\.txt|Pipfile\.lock|poetry\.lock|uv\.lock|Cargo\.lock|go\.sum|composer\.lock|Gemfile\.lock)$/.test(p);
+
+  function osvSeverity(v) {
+    const s = String(v?.database_specific?.severity || '').toUpperCase();
+    return { CRITICAL: 'Critical', HIGH: 'High', MODERATE: 'Medium', MEDIUM: 'Medium', LOW: 'Low' }[s] || 'High';
+  }
+
+  async function queryOsv(deps, fetchFn, onProgress) {
+    const unique = [...new Map(deps.map((d) => [`${d.ecosystem}|${d.name}|${d.version}`, d])).values()];
+    const hits = [];
+    for (let i = 0; i < unique.length; i += 500) {
+      const chunk = unique.slice(i, i + 500);
+      const res = await fetchFn('https://api.osv.dev/v1/querybatch', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ queries: chunk.map((d) => ({ package: { name: d.name, ecosystem: d.ecosystem }, version: d.version })) }) });
+      if (!res.ok) throw new Error(`OSV returned ${res.status}`);
+      const j = await res.json();
+      (j.results || []).forEach((r, k) => { for (const v of r.vulns || []) hits.push({ dep: chunk[k], id: v.id }); });
+      onProgress?.(Math.min(i + 500, unique.length), unique.length);
+    }
+    const ids = [...new Set(hits.map((h) => h.id))].slice(0, 300), details = new Map();
+    for (let i = 0; i < ids.length; i += 8) {
+      await Promise.all(ids.slice(i, i + 8).map(async (id) => {
+        try { const r = await fetchFn(`https://api.osv.dev/v1/vulns/${encodeURIComponent(id)}`); if (r.ok) details.set(id, await r.json()); } catch { /* falls back to unrated */ }
+      }));
+    }
+    return { checked: unique.length, findings: hits.map(({ dep, id }) => {
+      const d = details.get(id), severity = osvSeverity(d);
+      return finding('G-05', statusFor(severity), severity, `${dep.name} ${dep.version}: ${d?.summary || id}`,
+        { ref: id, source: 'OSV.dev', key: vulnKey(id, d?.aliases, dep.name) });
+    }) };
+  }
+
+  const statusFor = (sev) => (sev === 'Critical' || sev === 'High' ? 'FAIL' : 'WARN');
+  const vulnKey = (id, aliases, pkg) => `${[id, ...(aliases || [])].find((a) => /^CVE-/.test(a)) || id}|${String(pkg).toLowerCase()}`;
+
+  // ---- Quick scan ----
+  async function quickScan(project, options = {}) {
+    const { files, gitFile, onProgress, fetchFn } = project;
+    const results = [], deps = [], cov = { files: files.length, scanned: 0, tooLarge: 0, longLines: 0, deps: 0, osv: 'off' };
+    const lang = new Set();
+    let routes = 0, auth = false, tracked = null, routeFile = null;
+
+    const indexBytes = await gitFile?.('index');
+    const isGit = !!(await gitFile?.('HEAD'));
+    if (indexBytes) tracked = parseGitIndex(indexBytes);
+    const dec = new TextDecoder();
+    const configBytes = await gitFile?.('config');
+    const gitConfig = configBytes ? dec.decode(configBytes) : '';
+    const paths = files.map((f) => f.path);
+
+    for (let i = 0; i < files.length; i++) {
+      const f = files[i], p = f.path, base = p.split('/').pop();
+      if (i % 40 === 0) { onProgress?.('files', i, files.length); await new Promise((r) => setTimeout(r)); }
+      const ext = (base.match(/\.([a-z0-9]+)$/i) || [])[1]?.toLowerCase();
+      if (ext && CODE_EXT.test(base)) lang.add(ext);
+      const isDocker = /^Dockerfile/.test(base) || /\.dockerfile$/i.test(base);
+      const isEnv = /^\.env/.test(base);
+      if (!TEXT_EXT.test(base) && !isDocker && !isEnv) continue;
+      if (f.size > MAX_FILE) { cov.tooLarge++; continue; }
+      let text;
+      try { text = await f.read(); } catch { continue; }
+      if (text.includes('\0')) continue;
+      cov.scanned++;
+
+      const lines = text.split(/\r?\n/);
+      const isExample = /\.(example|sample|template|dist)$|(^|\/)(docs?|examples?|fixtures?|__tests__)\//i.test(p);
+      // Test code never ships, so code-pattern rules skip it. Secret rules do not.
+      const isTest = /(^|\/)(tests?|specs?|__tests__|fixtures?)\/|\.(test|spec)\.[a-z]+$|(^|\/)test_[^/]+\.py$/i.test(p);
+      for (let n = 0; n < lines.length; n++) {
+        const line = lines[n];
+        if (line.length > MAX_LINE) { cov.longLines++; continue; }
+        if (!isExample && !/\.lock$|package-lock\.json$|go\.sum$/.test(base)) {
+          for (const [name, re] of SECRET_RULES) {
+            const m = re.exec(line);
+            if (m && !PLACEHOLDER.test(m[0])) {
+              // Only the rule name and location are kept. The value never leaves this loop.
+              results.push(finding('G-07', 'FAIL', 'Critical', `${name} found`, { file: p, line: n + 1 }));
+              break;
+            }
+          }
+        }
+        if (isComment(line) || isTest || line.includes('devsec-ignore')) continue;
+        for (const rule of CODE_RULES) {
+          if (rule.ext.test(base) && rule.re.test(line)) results.push(finding(rule.id, statusFor(rule.sev), rule.sev, rule.title, { file: p, line: n + 1 }));
+        }
+        if (CODE_EXT.test(base)) {
+          if (ROUTE_RE.test(line)) { routes++; routeFile ??= p; }
+          if (AUTH_RE.test(line)) auth = true;
+        }
+        if (/api\.(ts|js|tsx|jsx)$/.test(base) && /http:\/\/(?!localhost|127\.|0\.0\.0\.0|\[::1\])/.test(line)) {
+          results.push(finding('F-02', 'WARN', 'Low', 'API client uses http://', { file: p, line: n + 1 }));
+        }
+      }
+
+      if (isDocker) {
+        const users = [...text.matchAll(/^\s*USER\s+(\S+)/gim)].map((m) => m[1]);
+        const last = users.pop();
+        if (!last) results.push(finding('F-09', 'WARN', 'Medium', 'No USER directive: the container runs as root', { file: p }));
+        else if (/^(root|0)(:|$)/.test(last)) results.push(finding('F-09', 'WARN', 'Medium', 'The final USER is root', { file: p }));
+        const stages = new Set();
+        for (const m of text.matchAll(/^\s*FROM\s+(?:--\S+\s+)?(\S+)(?:\s+AS\s+(\S+))?/gim)) {
+          const image = m[1];
+          if (m[2]) stages.add(m[2].toLowerCase());
+          if (stages.has(image.toLowerCase()) && !m[2] || image === 'scratch' || image.includes('@sha256:') || image.includes('$')) continue;
+          const tag = image.split('/').pop().split(':')[1];
+          if (!tag || tag === 'latest') results.push(finding('C-02', 'WARN', 'Medium', `${image} has no fixed version`, { file: p }));
+        }
+      }
+
+      if (/(^|\/)\.github\/workflows\/[^/]+\.ya?ml$/.test(p)) {
+        lines.forEach((line, n) => {
+          const m = /^\s*(?:-\s*)?uses:\s*['"]?([^\s'"#@]+)@([^\s'"#]+)/.exec(line);
+          if (!m || m[1].startsWith('./') || m[1].startsWith('docker:')) return;
+          if (/^[0-9a-f]{40}$/.test(m[2])) return;
+          if (/^(master|main|develop|latest|dev)$/.test(m[2])) results.push(finding('C-01', 'FAIL', 'High', `${m[1]} follows the moving branch ${m[2]}`, { file: p, line: n + 1 }));
+          else results.push(finding('C-01', 'WARN', 'Medium', `${m[1]}@${m[2]} is not pinned to a commit SHA`, { file: p, line: n + 1 }));
+        });
+      }
+
+      if (/(^|\/)requirements[^/]*\.txt$/.test(p) && !text.includes('--hash=')) {
+        const loose = lines.filter((l) => l.trim() && !/^\s*(#|-r |-e |--)/.test(l) && !l.includes('=='));
+        if (loose.length) results.push(finding('F-07', 'WARN', 'Low', `${loose.length} unpinned requirement(s)`, { file: p }));
+      }
+      if (isLockfile(p)) deps.push(...parseLock(p, text));
+    }
+
+    // Controls that look at the project as a whole.
+    if (routes && !auth) results.push(finding('F-01', 'FAIL', 'Critical', `${routes} API route(s), but no authentication code anywhere`, { file: routeFile }));
+    if (tracked) {
+      for (const p of tracked) if (SECRET_FILE.test(p) && !SECRET_FILE_OK.test(p)) results.push(finding('G-03', 'FAIL', 'Critical', 'Secret-like file is tracked by Git', { file: p }));
+    }
+    if (isGit) {
+      const hooks = /hooksPath\s*=\s*(\S+)/.exec(gitConfig);
+      const hookFound = hooks && paths.some((p) => p === `${hooks[1].replace(/^\.\//, '')}/pre-commit`);
+      if (!hookFound && !paths.includes('.pre-commit-config.yaml')) results.push(finding('G-06', 'WARN', 'Medium', 'Nothing blocks a secret at commit time'));
+    }
+    if (!paths.some((p) => /^(\.github\/|docs\/)?SECURITY\.md$/i.test(p))) results.push(finding('G-08', 'WARN', 'Low', 'No SECURITY.md'));
+    const gitignore = files.find((f) => f.path === '.gitignore');
+    if (paths.some((p) => /^\.env/.test(p.split('/').pop()) && !/\.(example|sample|template)$/.test(p))) {
+      const text = gitignore ? await gitignore.read() : '';
+      if (!/^\s*\*?\.env/m.test(text)) results.push(finding('G-09', 'FAIL', 'High', 'An .env file exists but .gitignore does not cover it', { file: '.gitignore' }));
+    }
+
+    // Dependencies.
+    cov.deps = deps.length;
+    if (!deps.length) cov.osv = 'none';
+    else if (options.osv && fetchFn) {
+      onProgress?.('osv', 0, 1);
+      try {
+        const r = await queryOsv(deps, fetchFn, (a, b) => onProgress?.('osv', a, b));
+        results.push(...r.findings);
+        cov.osv = 'done';
+      } catch (e) { cov.osv = 'failed'; cov.osvError = String(e.message || e); }
+    }
+
+    const ran = new Set(['F-02', 'F-03', 'F-07', 'F-09', 'C-01', 'C-02', 'G-01', 'G-02', 'G-07', 'G-08', 'G-09']);
+    if (routes) ran.add('F-01');
+    if (tracked) ran.add('G-03');
+    if (isGit) ran.add('G-06');
+    if (cov.osv === 'done' || cov.osv === 'none') ran.add('G-05');
+    return { findings: results, ran: [...ran], coverage: cov, stack: { languages: [...lang], isGit, gitIndex: !!tracked } };
+  }
+
+  // ---- Deep scan: turn each tool's own JSON into findings ----
+  const titleCase = (s) => { const t = String(s || '').toLowerCase(); return t.charAt(0).toUpperCase() + t.slice(1); };
+  const relPath = (p, root) => {
+    let s = String(p || '').replace(/\\/g, '/');
+    const r = String(root || '').replace(/\\/g, '/').replace(/\/$/, '');
+    if (r && s.toLowerCase().startsWith(r.toLowerCase() + '/')) s = s.slice(r.length + 1);
+    return s;
+  };
+  const cvssToSeverity = (x) => { const n = parseFloat(x); if (!(n > 0)) return 'High'; return n >= 9 ? 'Critical' : n >= 7 ? 'High' : n >= 4 ? 'Medium' : 'Low'; };
+
+  function normalizeDeep(raw) {
+    const out = [], status = raw.status || {}, root = status.root;
+    for (const g of Array.isArray(raw.gitleaks) ? raw.gitleaks : []) {
+      out.push(finding(g.Commit ? 'G-04' : 'G-07', 'FAIL', 'Critical', `${g.RuleID}${g.Commit ? ` in commit ${String(g.Commit).slice(0, 8)}` : ''}`,
+        { file: relPath(g.File, root), line: g.StartLine, source: 'gitleaks' }));
+    }
+    for (const r of raw.osv?.results || []) {
+      for (const p of r.packages || []) {
+        const vulns = new Map((p.vulnerabilities || []).map((v) => [v.id, v]));
+        for (const g of p.groups || []) {
+          const severity = cvssToSeverity(g.max_severity), v = vulns.get(g.ids?.[0]);
+          out.push(finding('G-05', statusFor(severity), severity, `${p.package?.name} ${p.package?.version}: ${v?.summary || g.ids?.[0]}`,
+            { ref: g.ids?.[0], file: relPath(r.source?.path, root), source: 'osv-scanner', key: vulnKey(g.ids?.[0], g.aliases, p.package?.name) }));
+        }
+      }
+    }
+    for (const r of raw.trivy?.Results || []) {
+      for (const v of r.Vulnerabilities || []) {
+        const severity = titleCase(v.Severity);
+        out.push(finding('G-05', statusFor(severity), severity, `${v.PkgName} ${v.InstalledVersion}: ${v.Title || v.VulnerabilityID}`,
+          { ref: v.VulnerabilityID, file: r.Target, source: 'trivy', fixed: v.FixedVersion, key: vulnKey(v.VulnerabilityID, [], v.PkgName) }));
+      }
+      for (const m of r.Misconfigurations || []) {
+        if (m.Status !== 'FAIL') continue;
+        const severity = titleCase(m.Severity);
+        out.push(finding('G-11', statusFor(severity), severity, m.Title || m.ID, { ref: m.ID, file: r.Target, line: m.CauseMetadata?.StartLine || undefined, source: 'trivy', fix: m.Resolution }));
+      }
+    }
+    for (const z of Array.isArray(raw.zizmor) ? raw.zizmor : []) {
+      if (z.ignored) continue;
+      const severity = titleCase(z.determinations?.severity);
+      const loc = z.locations?.[0], local = loc?.symbolic?.key?.Local;
+      out.push(finding('C-03', statusFor(severity), ['Critical', 'High', 'Medium', 'Low'].includes(severity) ? severity : 'Low', z.desc || z.ident,
+        { ref: z.ident, file: relPath(local?.given_path || local?.verbatim_path, root), line: (loc?.concrete?.location?.start_point?.row ?? -1) + 1 || undefined, source: 'zizmor' }));
+    }
+    for (const r of raw.opengrep?.results || []) {
+      const severity = { ERROR: 'High', WARNING: 'Medium', INFO: 'Low' }[r.extra?.severity] || 'Medium';
+      const rule = String(r.check_id).split('.').slice(-3).join('.');
+      // extra.lines holds source text and may contain a secret, so it is never copied.
+      out.push(finding('G-10', statusFor(severity), severity, rule, { ref: rule, file: relPath(r.path, root), line: r.start?.line, source: 'opengrep', fix: String(r.extra?.message || '').slice(0, 300) }));
+    }
+    return out;
+  }
+
+  const REQUIRED_TOOLS = ['gitleaks', 'osv-scanner', 'trivy'];
+  const deepComplete = (status) => status?.phase === 'done'
+    && REQUIRED_TOOLS.every((t) => status.tools?.some((x) => x.tool === t && x.state === 'ok'))
+    && !status.tools?.some((x) => x.state === 'failed');
+
+  // ---- Merge and verdict ----
+  const ORDER = { Critical: 0, High: 1, Medium: 2, Low: 3 };
+  function merge(quick, deepFindings, status) {
+    const seen = new Set(), findings = [];
+    for (const f of [...deepFindings, ...(quick?.findings || [])]) {
+      const key = f.key || `${f.id}|${f.file}|${f.line}|${f.title}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      findings.push(f);
+    }
+    findings.sort((a, b) => ORDER[a.severity] - ORDER[b.severity] || a.id.localeCompare(b.id));
+    const complete = deepComplete(status);
+    const ran = new Set(quick?.ran || []);
+    if (complete) ['G-04', 'G-05', 'G-07', 'G-11'].forEach((id) => ran.add(id));
+    if (complete && status.tools.some((t) => t.tool === 'opengrep' && t.state === 'ok')) ran.add('G-10');
+    if (complete && status.tools.some((t) => t.tool === 'zizmor' && t.state === 'ok')) ran.add('C-03');
+
+    const controls = Object.entries(CONTROLS).map(([id, [title, std, fix]]) => {
+      const hits = findings.filter((f) => f.id === id);
+      const worst = hits.some((f) => f.status === 'FAIL') ? 'FAIL' : hits.length ? 'WARN' : ran.has(id) ? 'PASS' : 'SKIP';
+      return { id, title, std, fix, status: worst, count: hits.length };
+    });
+    const counts = { Critical: 0, High: 0, Medium: 0, Low: 0 };
+    findings.forEach((f) => { counts[f.severity]++; });
+    let verdict;
+    if (counts.Critical + counts.High > 0) verdict = 'CRITICAL';
+    else if (!complete) verdict = 'INCOMPLETE';
+    else if (findings.length) verdict = 'ACCEPTED';
+    else verdict = 'LOW';
+    return { verdict, findings, controls, counts, deepDone: complete };
+  }
+
+  const VERDICTS = {
+    CRITICAL: ['🔴 Critical: do not deploy', 'Fix the Critical and High findings, then scan again.'],
+    INCOMPLETE: ['⚪ Not cleared yet', 'The quick scan found nothing blocking, but Git history and deeper code analysis have not run. Run the deep scan to get a final verdict.'],
+    ACCEPTED: ['🟡 Accepted risk', 'Nothing blocking. Deployable to dev if the team accepts the listed risks. Fix them before production.'],
+    LOW: ['🟢 Low risk', 'All automated checks passed. Confirm the manual checklist before deploying.'],
+  };
+
+  function toMarkdown(name, merged, quick, status, when) {
+    const [label, advice] = VERDICTS[merged.verdict];
+    const cell = (s) => String(s ?? '').replace(/\|/g, '\\|').replace(/\r?\n/g, ' ');
+    const out = [`# Security report: ${name}`, '', `**Date:** ${when}  `, `**Verdict:** ${label}  `, `**Tooling:** [AI Dev Security Playbook](https://github.com/alouatiq/ai-dev-security-playbook). This identifies the audit tooling only; the audited project remains the work of its own contributors.`, '', advice, '',
+      '## Controls', '', '| ID | Control | Status | Standard |', '| --- | --- | --- | --- |'];
+    for (const c of merged.controls) out.push(`| ${c.id} | ${cell(c.title)} | ${c.status}${c.count ? ` (${c.count})` : ''} | ${cell(c.std)} |`);
+    out.push('', '## Findings', '');
+    if (!merged.findings.length) out.push('None.');
+    for (const f of merged.findings) {
+      const fix = f.fix || CONTROLS[f.id]?.[2];
+      out.push(`- **[${f.severity}] ${f.id}** ${cell(f.title)}${f.file ? ` (\`${cell(f.file)}${f.line ? `:${f.line}` : ''}\`)` : ''}, ${cell(f.source)}${f.fixed ? `. Fixed in ${cell(f.fixed)}` : ''}${fix ? `. ${cell(fix)}` : ''}`);
+    }
+    out.push('', '## Coverage', '');
+    if (quick) out.push(`- Quick scan read ${quick.coverage.scanned} of ${quick.coverage.files} files; ${quick.coverage.tooLarge} over 1 MB were skipped.`);
+    if (status?.tools) for (const t of status.tools) out.push(`- ${t.tool} ${t.version || ''}: ${t.state}. ${cell(t.note)}`);
+    else out.push('- Deep scan was not run.');
+    return out.join('\n') + '\n';
+  }
+
+  function detectOs(nav) {
+    const s = `${nav?.userAgentData?.platform || ''} ${nav?.platform || ''} ${nav?.userAgent || ''}`.toLowerCase();
+    if (s.includes('win')) return 'windows';
+    if (s.includes('mac')) return 'macos';
+    return 'linux';
+  }
+
+  function deepCommand(href, os) {
+    const fileUrl = /^file:\/\/\/?(.*)$/.exec(String(href).split(/[?#]/)[0]);
+    let dir = null;
+    if (fileUrl) dir = decodeURIComponent(fileUrl[1]).replace(/\/[^/]*$/, '');
+    if (os === 'windows') {
+      const path = dir ? dir.replace(/\//g, '\\') : 'C:\\path\\to\\ai-dev-security-playbook';
+      return `powershell -NoProfile -ExecutionPolicy Bypass -File "${path}\\scanner\\deep-scan.ps1"`;
+    }
+    return `bash "${dir ? `/${dir.replace(/^\/+/, '')}` : '/path/to/ai-dev-security-playbook'}/scanner/deep-scan.sh"`;
+  }
+
+  return { SKIP_DIRS, CONTROLS, VERDICTS, parseGitIndex, parseLock, isLockfile, quickScan, normalizeDeep, deepComplete, merge, toMarkdown, detectOs, deepCommand };
+})();
+if (typeof globalThis !== 'undefined') globalThis.Engine = Engine;
+</script>
+
+<script id="demo">
+// Built-in sample. Fake keys are split so secret scanners do not flag this file.
+const Demo = (() => {
+  const text = {
+    '.gitignore': 'node_modules\n',
+    '.env': 'DB_PASSWORD=' + 'hunter2hunter2\n',
+    'requirements.txt': 'fastapi==0.95.0\nrequests\n',
+    'Dockerfile': 'FROM python:latest\nCOPY . /app\nCMD ["python", "main.py"]\n',
+    'app/main.py': 'from fastapi import FastAPI\nfrom fastapi.middleware.cors import CORSMiddleware\napp = FastAPI()\napp.add_middleware(CORSMiddleware, allow_origins=["*"])\n\n@app.get("/users/{uid}")\ndef user(uid, cur):\n    cur.execute(f"SELECT * FROM users WHERE id = {uid}")\n',
+    'app/settings.py': 'AWS_KEY = "AKIA' + 'QWERTYUIOPASDFGH"\n',
+    'web/src/Bio.tsx': 'export const Bio = ({ html }) => <div dangerouslySetInnerHTML={{ __html: html }} />;\n', // devsec-ignore
+    '.github/workflows/ci.yml': 'on: push\njobs:\n  scan:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: aquasecurity/trivy-action@master\n',
+  };
+  const files = Object.entries(text).map(([path, t]) => ({ path, size: t.length, read: async () => t }));
+  const deep = {
+    status: { schema: 1, phase: 'done', platform: 'sample', root: '/sample', started: '2026-10-30T09:00:00Z', tools: [
+      { tool: 'gitleaks', state: 'ok', version: '8.30.1', note: 'scanned git' },
+      { tool: 'osv-scanner', state: 'ok', version: '2.7.0', note: 'scan complete' },
+      { tool: 'trivy', state: 'ok', version: '0.76.1', note: 'scan complete' },
+      { tool: 'zizmor', state: 'ok', version: '1.31.1', note: 'scan complete' },
+      { tool: 'opengrep', state: 'ok', version: '1.33.1', note: 'languages: python typescript' } ] },
+    gitleaks: [{ RuleID: 'github-pat', File: 'old/deploy.sh', StartLine: 3, Commit: '19cf22e502ee078f' }],
+    osv: { results: [{ source: { path: '/sample/requirements.txt' }, packages: [{ package: { name: 'fastapi', version: '0.95.0' }, groups: [{ ids: ['GHSA-qf9m-vfgh-m389'], aliases: ['CVE-2024-24762'], max_severity: '7.5' }], vulnerabilities: [{ id: 'GHSA-qf9m-vfgh-m389', summary: 'Regular expression denial of service in form parsing' }] }] }] },
+    trivy: { Results: [{ Target: 'Dockerfile', Misconfigurations: [{ ID: 'DS-0026', Status: 'FAIL', Severity: 'LOW', Title: 'No HEALTHCHECK defined', Resolution: 'Add a HEALTHCHECK statement.' }] }] },
+    zizmor: [{ ident: 'template-injection', desc: 'code injection via template expansion', determinations: { severity: 'High' }, locations: [{ symbolic: { key: { Local: { given_path: '.github/workflows/ci.yml' } } }, concrete: { location: { start_point: { row: 7 } } } }] }],
+    opengrep: { results: [{ check_id: 'python.lang.security.audit.formatted-sql-query', path: '/sample/app/main.py', start: { line: 8 }, extra: { severity: 'ERROR', message: 'Formatted SQL query detected. Use parameterized queries.' } }] },
+  };
+  return { files, deep };
+})();
+</script>
+
+<script id="ui">
+(() => {
+  'use strict';
+  const $ = (id) => document.getElementById(id);
+  // Build all UI with text nodes: file names and tool output are untrusted.
+  const h = (tag, attrs, ...kids) => {
+    const el = document.createElement(tag);
+    for (const [k, v] of Object.entries(attrs || {})) {
+      if (k === 'class') el.className = v; else if (k.startsWith('on')) el.addEventListener(k.slice(2), v); else el.setAttribute(k, v);
+    }
+    el.append(...kids.flat().filter((x) => x !== null && x !== undefined && x !== false));
+    return el;
+  };
+  const tag = (text, cls) => h('span', { class: `tag s-${cls || text}` }, text);
+
+  const state = { name: '', quick: null, status: null, raw: {}, handle: null, timer: null, stamp: '', merged: null, os: Engine.detectOs(navigator), sample: false };
+  const OS_LABEL = { windows: 'Windows', macos: 'macOS', linux: 'Linux' };
+
+  // ---- Theme ----
+  const root = document.documentElement;
+  try { const t = localStorage.getItem('adsp-theme'); if (t) root.dataset.theme = t; } catch { /* storage may be blocked */ }
+  $('themeBtn').onclick = () => {
+    const dark = root.dataset.theme ? root.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+    root.dataset.theme = dark ? 'light' : 'dark';
+    try { localStorage.setItem('adsp-theme', root.dataset.theme); } catch { /* storage may be blocked */ }
+  };
+
+  $('envLine').textContent = `Detected ${OS_LABEL[state.os]}. ` + ('showDirectoryPicker' in window
+    ? 'Your browser asks for read-only access, and only to the folder you choose.'
+    : 'This browser will ask to "upload" the folder. Nothing leaves your computer: the page only reads it.');
+
+  // ---- Reading a folder ----
+  async function walkHandle(dir, prefix, out) {
+    for await (const [name, entry] of dir.entries()) {
+      if (entry.kind === 'directory') {
+        if (!Engine.SKIP_DIRS.has(name)) await walkHandle(entry, `${prefix}${name}/`, out);
+      } else {
+        const file = () => entry.getFile();
+        const f = await file().catch(() => null);
+        if (f) out.push({ path: prefix + name, size: f.size, read: async () => (await file()).text() });
+      }
+    }
+    return out;
+  }
+  const gitReaderForHandle = (dir) => async (name) => {
+    try {
+      const git = await dir.getDirectoryHandle('.git');
+      return new Uint8Array(await (await (await git.getFileHandle(name)).getFile()).arrayBuffer());
+    } catch { return null; }
+  };
+
+  function projectFromFileList(list) {
+    const files = [], git = new Map(), devsec = [];
+    let name = '';
+    for (const f of list) {
+      const parts = f.webkitRelativePath.split('/');
+      name = parts.shift();
+      if (parts[0] === '.git') { if (parts.length === 2) git.set(parts[1], f); continue; }
+      if (parts[0] === '.devsec') { if (parts.length === 2 && parts[1].endsWith('.json')) devsec.push(f); continue; }
+      if (parts.slice(0, -1).some((p) => Engine.SKIP_DIRS.has(p))) continue;
+      files.push({ path: parts.join('/'), size: f.size, read: () => f.text() });
+    }
+    const gitFile = async (n) => (git.has(n) ? new Uint8Array(await git.get(n).arrayBuffer()) : null);
+    return { name, files, gitFile, devsec };
+  }
+
+  function setProgress(kind, a, b) {
+    $('prog').value = b ? (a / b) * 100 : 0;
+    $('progText').textContent = kind === 'osv' ? `Checking dependencies: ${a} of ${b}` : `Reading files: ${a} of ${b}`;
+  }
+
+  async function runQuick(project) {
+    stopWatch();
+    Object.assign(state, { name: project.name, quick: null, status: null, raw: {}, stamp: new Date().toLocaleString(), sample: false });
+    $('sampleBanner').hidden = true;
+    $('progressBox').hidden = false;
+    setProgress('files', 0, project.files.length);
+    state.quick = await Engine.quickScan({ ...project, onProgress: setProgress, fetchFn: (...a) => fetch(...a) }, { osv: $('osvOpt').checked });
+    $('progressBox').hidden = true;
+    render();
+    if (project.devsec?.length) await loadResultFiles(project.devsec);
+    $('results').scrollIntoView();
+  }
+
+  $('pickBtn').onclick = async () => {
+    if (!('showDirectoryPicker' in window)) { $('dirInput').click(); return; }
+    try {
+      const dir = await window.showDirectoryPicker({ mode: 'read', id: 'adsp' });
+      state.handle = dir;
+      $('progressBox').hidden = false;
+      $('progText').textContent = 'Listing files…';
+      const files = await walkHandle(dir, '', []);
+      await runQuick({ name: dir.name, files, gitFile: gitReaderForHandle(dir) });
+      startWatch();
+    } catch (e) { if (e.name !== 'AbortError') showError(e); }
+  };
+  $('dirInput').onchange = (e) => {
+    if (!e.target.files.length) return;
+    state.handle = null;
+    runQuick(projectFromFileList(e.target.files)).catch(showError);
+  };
+  function showError(e) {
+    $('progressBox').hidden = false;
+    $('prog').value = 0;
+    $('progText').textContent = `Could not read that folder: ${e.message}`;
+  }
+
+  // ---- Deep scan results ----
+  const RESULT_KEYS = { 'gitleaks.json': 'gitleaks', 'osv-scanner.json': 'osv', 'trivy.json': 'trivy', 'zizmor.json': 'zizmor', 'opengrep.json': 'opengrep', 'status.json': 'status' };
+  const parse = (t) => { try { return JSON.parse(t); } catch { return null; } };
+
+  async function loadResultFiles(files) {
+    for (const f of files) { const key = RESULT_KEYS[f.name]; if (key) state.raw[key] = parse(await f.text()); }
+    state.status = state.raw.status || state.status || { phase: 'done', tools: [] };
+    render();
+  }
+
+  let lastStatus = '';
+  async function pollDeep() {
+    if (!state.handle) return;
+    try {
+      const dir = await state.handle.getDirectoryHandle('.devsec');
+      const text = await (await (await dir.getFileHandle('status.json')).getFile()).text();
+      if (text === lastStatus) return;
+      lastStatus = text;
+      const status = parse(text);
+      if (!status) return;
+      state.status = status;
+      if (status.phase === 'done') {
+        for (const [file, key] of Object.entries(RESULT_KEYS)) {
+          if (key === 'status') continue;
+          try { state.raw[key] = parse(await (await (await dir.getFileHandle(file)).getFile()).text()); } catch { delete state.raw[key]; }
+        }
+      }
+      state.raw.status = status;
+      render();
+    } catch { /* .devsec does not exist until the command runs */ }
+  }
+  function startWatch() { lastStatus = ''; pollDeep(); state.timer = setInterval(pollDeep, 2000); }
+  function stopWatch() { clearInterval(state.timer); state.timer = null; }
+
+  // ---- Rendering ----
+  function renderTabs() {
+    $('osTabs').replaceChildren(...Object.keys(OS_LABEL).map((os) => h('button', {
+      type: 'button', 'aria-pressed': String(os === state.os), onclick: () => { state.os = os; renderTabs(); } }, OS_LABEL[os])));
+    $('deepCmd').textContent = Engine.deepCommand(location.href, state.os);
+  }
+
+  function render() {
+    if (!state.quick && !state.status) return;
+    $('results').hidden = false;
+    const deep = state.status?.phase === 'done' ? Engine.normalizeDeep(state.raw) : [];
+    const m = state.merged = Engine.merge(state.quick, deep, state.status);
+    const [label, advice] = Engine.VERDICTS[m.verdict];
+    const cov = state.quick?.coverage;
+
+    const covNotes = [];
+    if (cov) {
+      covNotes.push(`Read ${cov.scanned} of ${cov.files} files.`);
+      if (cov.tooLarge) covNotes.push(`${cov.tooLarge} over 1 MB skipped.`);
+      const depCount = `${cov.deps} ${cov.deps === 1 ? 'dependency' : 'dependencies'}`;
+      if (cov.osv === 'done') covNotes.push(`${depCount} checked online.`);
+      if (cov.osv === 'off' && cov.deps) covNotes.push(`${depCount} not checked: online check is off.`);
+      if (cov.osv === 'failed') covNotes.push(`Dependency check failed (${cov.osvError}), so it counts as not run.`);
+    }
+    $('verdictCard').className = `card verdict ${m.verdict}`;
+    $('verdictCard').replaceChildren(
+      h('p', { class: 'small muted' }, `${state.name} · ${state.stamp}`),
+      h('h2', {}, label), h('p', {}, advice),
+      h('div', { class: 'tiles' }, ['Critical', 'High', 'Medium', 'Low'].map((s) => h('div', { class: 'tile' }, h('b', { class: `s-${s}` }, String(m.counts[s])), h('span', {}, s)))),
+      h('p', { class: 'small muted', style: 'margin-top:12px' }, covNotes.join(' ')));
+
+    const tools = state.status?.tools || [];
+    const done = state.status?.phase === 'done';
+    const started = state.status?.started ? new Date(state.status.started).toLocaleString() : 'an unknown time';
+    $('watchText').textContent = done ? `Deep scan results from ${state.sample ? 'the sample' : started} are merged below. Run the command again after changing code.`
+      : state.status ? 'Deep scan running…'
+        : state.handle ? 'Watching the folder. Results appear here by themselves.' : 'Browser cannot watch the folder; use the drop area below.';
+    $('toolTable').replaceChildren(...(tools.length ? [h('thead', {}, h('tr', {}, h('th', {}, 'Scanner'), h('th', {}, 'Version'), h('th', {}, 'State'), h('th', {}, 'Note')))] : []),
+      h('tbody', {}, tools.map((t) => h('tr', {}, h('td', {}, t.tool), h('td', {}, t.version || ''), h('td', {}, tag(t.state)), h('td', {}, t.note || '')))));
+
+    $('controlTable').replaceChildren(h('thead', {}, h('tr', {}, h('th', {}, 'ID'), h('th', {}, 'Control'), h('th', {}, 'Status'), h('th', {}, 'Standard'))),
+      h('tbody', {}, m.controls.map((c) => h('tr', {}, h('td', {}, c.id), h('td', {}, c.title),
+        h('td', {}, tag(c.status === 'SKIP' ? 'NOT RUN' : c.count ? `${c.status} · ${c.count}` : c.status, c.status)), h('td', { class: 'muted' }, c.std)))));
+
+    const sources = [...new Set(m.findings.map((f) => f.source))];
+    const keep = $('srcFilter').value;
+    $('srcFilter').replaceChildren(h('option', { value: '' }, 'All sources'), ...sources.map((s) => h('option', {}, s)));
+    $('srcFilter').value = sources.includes(keep) ? keep : '';
+    renderFindings();
+  }
+
+  function renderFindings() {
+    const sev = $('sevFilter').value, src = $('srcFilter').value;
+    const list = (state.merged?.findings || []).filter((f) => (!sev || f.severity === sev) && (!src || f.source === src));
+    const LIMIT = 300;
+    $('findings').replaceChildren(...(list.length ? list.slice(0, LIMIT).map((f) => h('div', { class: 'finding' },
+      h('h4', {}, tag(f.severity), ' ', f.title),
+      h('div', { class: 'meta' }, [f.id, f.source, f.ref, f.file && `${f.file}${f.line ? `:${f.line}` : ''}`].filter(Boolean).join(' · ')),
+      h('div', { class: 'fix' }, f.fixed ? `Upgrade to ${f.fixed}. ` : '', f.fix || Engine.CONTROLS[f.id]?.[2] || '')))
+      : [h('p', { class: 'muted' }, 'No findings.')]),
+    ...(list.length > LIMIT ? [h('p', { class: 'muted small' }, `Showing ${LIMIT} of ${list.length}. The saved report lists all of them.`)] : []));
+  }
+  $('sevFilter').onchange = renderFindings;
+  $('srcFilter').onchange = renderFindings;
+
+  $('copyBtn').onclick = async () => {
+    try { await navigator.clipboard.writeText($('deepCmd').textContent); $('copyBtn').textContent = 'Copied'; setTimeout(() => { $('copyBtn').textContent = 'Copy command'; }, 1500); }
+    catch { $('copyBtn').textContent = 'Select the text to copy'; }
+  };
+  $('printBtn').onclick = () => print();
+  $('mdBtn').onclick = () => {
+    const md = Engine.toMarkdown(state.name, state.merged, state.quick, state.status, state.stamp);
+    const a = h('a', { href: URL.createObjectURL(new Blob([md], { type: 'text/markdown' })), download: `security-report-${state.name}.md` });
+    a.click();
+    URL.revokeObjectURL(a.href);
+  };
+
+  // Drop area for browsers without folder watching.
+  const drop = $('drop');
+  ['dragover', 'dragenter'].forEach((ev) => drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.add('over'); }));
+  ['dragleave', 'drop'].forEach((ev) => drop.addEventListener(ev, () => drop.classList.remove('over')));
+  drop.addEventListener('drop', (e) => { e.preventDefault(); loadResultFiles([...e.dataTransfer.files]); });
+  $('resultsInput').onchange = (e) => loadResultFiles([...e.target.files]);
+
+  // ---- Manual checklist ----
+  const MANUAL = [
+    ['Access', 'Every API route requires a valid identity, and no credential travels in a query string.'],
+    ['Access', 'Authorization is enforced: callers reach only the data they are entitled to.'],
+    ['Access', 'Data-access events are logged with the authenticated user.'],
+    ['Network', 'The app is served over HTTPS, and HTTP redirects to HTTPS.'],
+    ['Network', 'The service is not exposed on 0.0.0.0 in production without a firewall or proxy.'],
+    ['Hardening', 'Security headers are present: CSP, X-Content-Type-Options, frame-ancestors, Referrer-Policy, HSTS.'],
+    ['Hardening', 'Rate limits and request timeouts protect expensive endpoints.'],
+    ['Secrets', 'Token caches and credential files on disk are protected by OS permissions.'],
+    ['Secrets', 'The OAuth or OIDC app registration belongs to this app alone.'],
+    ['Delivery', 'Deployments reference container images by digest, not by a moving tag.'],
+    ['Delivery', 'Containers run with a read-only filesystem and dropped capabilities where feasible.'],
+    ['Delivery', 'Direct pushes to the default branch are blocked, and merges go through reviewed CI.'],
+    ['Governance', 'Logs use a structured logger and do not echo upstream response bodies.'],
+  ];
+  let ticks = {};
+  try { ticks = JSON.parse(localStorage.getItem('adsp-manual') || '{}'); } catch { /* storage may be blocked */ }
+  $('manualList').replaceChildren(...MANUAL.map(([group, text], i) => {
+    const box = h('input', { type: 'checkbox', id: `m${i}`, onchange: (e) => {
+      ticks[i] = e.target.checked;
+      try { localStorage.setItem('adsp-manual', JSON.stringify(ticks)); } catch { /* storage may be blocked */ }
+    } });
+    box.checked = !!ticks[i];
+    return h('div', { class: 'check' }, box, h('label', { for: `m${i}` }, h('b', {}, `${group}: `), text));
+  }));
+
+  // ---- Sample report ----
+  async function runDemo() {
+    stopWatch();
+    state.handle = null;
+    const quick = await Engine.quickScan({ files: Demo.files, gitFile: async (n) => (n === 'HEAD' ? new Uint8Array(1) : null) }, { osv: false });
+    Object.assign(state, { name: 'sample-project', quick, status: Demo.deep.status, raw: Demo.deep, stamp: 'sample data', sample: true });
+    render();
+    $('sampleBanner').hidden = false;
+  }
+  $('demoBtn').onclick = async () => { await runDemo(); $('results').scrollIntoView(); };
+
+  renderTabs();
+  if (location.hash === '#demo') runDemo().then(() => $('results').scrollIntoView({ behavior: 'instant' }));
+  window.__ready = true;
+})();
+</script>
+</body>
+</html>

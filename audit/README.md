@@ -7,7 +7,7 @@ PASS/WARN/FAIL breakdown plus a deploy-readiness verdict.
 
 | File | Purpose |
 | --- | --- |
-| `run-audit.ps1` | Windows/PowerShell audit script. Runs all automated checks from `../README.md` §2, prints a verdict, and writes two reports. |
+| `run-audit.ps1` | Windows/PowerShell audit script. Runs all automated checks from `../docs/PLAYBOOK.md` §2, prints a verdict, and writes two reports. |
 | `run-audit.sh` | Same checks/output for Linux/macOS/Git-Bash. |
 | `scaffold-bia-acp.ps1` | Scaffolds a dated BIA/ACP addendum (`../templates/BIA_ACP_TEMPLATE.md`) into the target repo's `security/` folder, pre-filling open findings from the latest audit run. Windows/PowerShell. |
 | `scaffold-bia-acp.sh` | Same, for Linux/macOS/Git-Bash. |
@@ -51,7 +51,7 @@ and its maintainer, [Dr. AL OUATIQ H.](https://www.alouatiq.com). The wording
 explicitly attributes only the audit tooling; it does not claim authorship,
 ownership, or endorsement of the project being audited.
 
-See `../README.md` §2–3 for the full checklist and how the verdict is
+See `../docs/PLAYBOOK.md` §2–3 for the full checklist and how the verdict is
 computed (severity mapping per control ID).
 
 For prevention and response guidance, including rules for AI prompts and logs,

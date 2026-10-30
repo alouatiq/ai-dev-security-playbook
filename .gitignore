@@ -2,6 +2,9 @@
 # or at a consumer repo copy — never checked in per audit/README.md.
 audit/reports/
 
+# Written by scanner/deep-scan when pointed at this repo
+.devsec/
+
 # OS / editor cruft
 .DS_Store
 Thumbs.db

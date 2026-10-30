@@ -353,7 +353,7 @@ CYB_PATH="$REPORT_DIR/CYB_report_$STAMP.md"
   echo ""
   echo "**Scope:** $REPO_PATH"
   echo "**Audit date:** $(date '+%Y-%m-%d')"
-  echo "**Method:** automated scan via \`audit/run-audit.sh\` (see \`../README.md\` for the full checklist; manual controls are not covered here)"
+  echo "**Method:** automated scan via \`audit/run-audit.sh\` (see \`../docs/PLAYBOOK.md\` for the full checklist; manual controls are not covered here)"
   echo "**Audit tooling:** [$PLAYBOOK_NAME]($PLAYBOOK_REPOSITORY)"
   echo "**Tooling maintainer:** $PLAYBOOK_MAINTAINER"
   echo "**Maintainer website:** [$PLAYBOOK_WEBSITE]($PLAYBOOK_WEBSITE)"
@@ -384,7 +384,7 @@ CYB_PATH="$REPORT_DIR/CYB_report_$STAMP.md"
   for i in "${!ROW_ID[@]}"; do
     [[ "${ROW_STATUS[$i]}" == "PASS" ]] && continue
     id="${ROW_ID[$i]}"; status="${ROW_STATUS[$i]}"; sev="${ROW_SEVERITY[$i]}"; msg="${ROW_MSG[$i]}"
-    entry="${STD_MAP[$id]:-n/a|See ../README.md checklist for this control.}"
+    entry="${STD_MAP[$id]:-n/a|See ../docs/PLAYBOOK.md checklist for this control.}"
     std="${entry%%|*}"; rem="${entry#*|}"
     tag="[Informational]"
     [[ "$status" == "FAIL" ]] && tag="[$sev]"
@@ -403,7 +403,7 @@ CYB_PATH="$REPORT_DIR/CYB_report_$STAMP.md"
 } > "$CYB_PATH"
 
 echo "CYB-style report written to: $CYB_PATH"
-echo "Manual controls (TLS, real auth behaviour, network segmentation, CI wiring): see ../README.md"
+echo "Manual controls (TLS, real auth behaviour, network segmentation, CI wiring): see ../docs/PLAYBOOK.md"
 echo ""
 
 if [[ "$VERDICT" == "CRITICAL" ]]; then exit 1; else exit 0; fi

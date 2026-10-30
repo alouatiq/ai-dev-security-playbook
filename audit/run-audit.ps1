@@ -3,7 +3,7 @@
     Portable, project-agnostic security audit for any repo (Python backend,
     Node frontend, monorepo, or either alone).
 .DESCRIPTION
-    Runs the automatable controls documented in ../README.md, classifies each
+    Runs the automatable controls documented in ../docs/PLAYBOOK.md, classifies each
     finding by severity, and prints an overall deploy-readiness verdict:
       - LOW RISK      : all clear, safe to deploy to dev
       - ACCEPTED RISK : warnings only, no criticals - deploy if accepted
@@ -327,7 +327,7 @@ $cyb.Add("# Security Audit (CYB-style report)")
 $cyb.Add("")
 $cyb.Add("**Scope:** $RepoPath")
 $cyb.Add("**Audit date:** $(Get-Date -Format 'yyyy-MM-dd')")
-$cyb.Add("**Method:** automated scan via ``audit/run-audit.ps1`` (see ``../README.md`` for the full checklist; manual controls are not covered here)")
+$cyb.Add("**Method:** automated scan via ``audit/run-audit.ps1`` (see ``../docs/PLAYBOOK.md`` for the full checklist; manual controls are not covered here)")
 $cyb.Add("**Audit tooling:** [$PlaybookName]($PlaybookRepository)")
 $cyb.Add("**Tooling maintainer:** $PlaybookMaintainer")
 $cyb.Add("**Maintainer website:** [$PlaybookWebsite]($PlaybookWebsite)")
@@ -358,7 +358,7 @@ $cyb.Add("")
 foreach ($r in ($script:Results | Where-Object { $_.Status -ne 'PASS' })) {
     $info = $ControlInfo[$r.Id]
     $std = if ($info) { $info.Standard } else { 'n/a' }
-    $rem = if ($info) { $info.Remediation } else { 'See ../README.md checklist for this control.' }
+    $rem = if ($info) { $info.Remediation } else { 'See ../docs/PLAYBOOK.md checklist for this control.' }
     $tag = if ($r.Status -eq 'FAIL') { "[$($r.Severity)]" } else { '[Informational]' }
     $cyb.Add("### $tag $($r.Id) - $($r.Message)")
     $cyb.Add("**Standard:** $std  ")
@@ -376,7 +376,7 @@ $cyb | Set-Content -Path $cybPath -Encoding UTF8
 
 Write-Host "Report written to: $reportPath" -ForegroundColor DarkGray
 Write-Host "CYB-style report written to: $cybPath" -ForegroundColor DarkGray
-Write-Host "Manual controls (TLS, real auth behaviour, network segmentation, CI wiring): see ../README.md" -ForegroundColor DarkGray
+Write-Host "Manual controls (TLS, real auth behaviour, network segmentation, CI wiring): see ../docs/PLAYBOOK.md" -ForegroundColor DarkGray
 Write-Host ""
 
 if ($verdict -eq 'CRITICAL') { exit 1 } else { exit 0 }
