@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.4.0](https://github.com/alouatiq/ai-dev-security-playbook/compare/v0.3.0...v0.4.0) (2026-09-18)
+
+
+### Features
+
+* **audit:** add pre-commit secret-scan hook (G-06) + docs ([a5f44be](https://github.com/alouatiq/ai-dev-security-playbook/commit/a5f44bed6cb3a58b2a9d90eb5f586a00daefb815))
+* **security:** strengthen secret leak prevention ([c2d23b5](https://github.com/alouatiq/ai-dev-security-playbook/commit/c2d23b53c51f62cf6701bd9a7672a585cb09e782))
+
 ## [0.3.0](https://github.com/alouatiq/ai-dev-security-playbook/compare/v0.2.1...v0.3.0) (2026-09-17)
 
 
